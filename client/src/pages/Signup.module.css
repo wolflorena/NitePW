@@ -1,0 +1,144 @@
+:root {
+  --dark-gray: #222831;
+  --light-gray: #eeeeee;
+  --yellow: #ffd369;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: inherit;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  filter: brightness(50%);
+  z-index: -1;
+}
+
+.formParent {
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
+.formParent img {
+  margin-bottom: 5vh;
+  height: 45px;
+  width: 150px;
+}
+
+.alert {
+  white-space: pre-line;
+  color: var(--yellow);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.form {
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 27px;
+  color: var(--light-gray);
+}
+
+.form input,
+.form select {
+  margin: 10px 0 10px 0;
+  border-radius: 15px;
+  outline: none;
+  border: none;
+  height: 30px;
+  background-color: rgba(238, 238, 238, 0.3);
+  padding-left: 15px;
+  color: var(--light-gray);
+  font-size: 14px;
+  font-weight: 500;
+  width: 200px;
+}
+
+.labelInput {
+  display: flex;
+  flex-direction: column;
+}
+
+.form select {
+  width: 210px;
+}
+
+.form button {
+  margin: 25px 0 10px 0;
+  width: 150px;
+  height: 30px;
+  border: none;
+  border-radius: 15px;
+  border: 0.5px solid;
+  background-color: transparent;
+  color: var(--yellow);
+  font-size: 15px;
+  font-weight: 500;
+  border-color: var(--yellow);
+  cursor: pointer;
+}
+
+.form button:hover {
+  background-color: var(--yellow);
+  color: var(--dark-gray);
+}
+
+.form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+h5,
+a {
+  color: var(--light-gray);
+  text-decoration: none;
+  font-weight: 400;
+  margin-top: 60px;
+}
+
+a {
+  font-weight: 600;
+}
+
+a:hover {
+  color: var(--yellow);
+}
+
+@media screen and (max-height: 750px) {
+  .formParent {
+    height: 100vh;
+  }
+}
