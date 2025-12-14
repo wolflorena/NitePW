@@ -1,0 +1,190 @@
+:root {
+  --dark-gray: hwb(216 13% 81%);
+  --white: rgb(238, 238, 238);
+  --yellow: rgb(255, 211, 105);
+  --light-gray: rgb(57, 62, 70);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.page {
+  height: 100vh;
+  background-color: var(--light-gray);
+  display: flex;
+  overflow: hidden;
+}
+
+.main {
+  width: 80vw;
+  margin: 30px;
+  display: flex;
+  flex-direction: column;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  border-radius: 30px;
+
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.info {
+  width: 40vw;
+  margin: 50px 0 0 50px;
+}
+
+.title {
+  height: 150px;
+  width: 250px;
+  object-fit: contain;
+}
+
+.firstChild {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.streaming {
+  width: 80px;
+  margin: 0 20px 0 20px;
+}
+
+.general {
+  color: var(--white);
+  display: flex;
+  justify-content: flex-start;
+  list-style: none;
+}
+
+.general li {
+  margin-right: 25px;
+  font-weight: bold;
+}
+
+.description {
+  margin-top: 20px;
+  color: var(--white);
+}
+
+.episodes {
+  color: var(--white);
+  margin: 50px 0 0 50px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header h3 {
+  font-size: 20px;
+  font-weight: 100;
+}
+
+.episodes select {
+  -webkit-appearance: none;
+  padding-left: 10px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-size: 20px;
+}
+
+.episodesList {
+  display: flex;
+  gap: 40px;
+}
+
+.listOfEpisodes {
+  height: 40vh;
+  overflow: hidden;
+  padding-right: 10px;
+}
+
+.episode {
+  width: 35vw;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.episode li {
+  margin-left: 15px;
+}
+
+.check {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--white);
+  font-size: 22px;
+}
+
+.checkOn {
+  color: var(--yellow);
+}
+
+.checkOff {
+  color: var(--white);
+}
+
+.carouselButtons {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 50px;
+}
+
+.sliderButton {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.heartBtn {
+  background-color: transparent;
+  border: none;
+  margin-left: 20px;
+  cursor: pointer;
+  font-size: 26px;
+}
+
+.heartRegular {
+  color: var(--white);
+}
+
+.heartSolid {
+  color: var(--yellow);
+}
+
+.plusBtn {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.plusIcon {
+  color: var(--white);
+  font-size: 28px;
+}
+
+.notFound {
+  color: var(--white);
+  margin: 30px;
+  opacity: 0.8;
+}

@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, type NavLinkProps } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 import { confirmAlert } from "../services/alert";
 
@@ -36,15 +36,33 @@ export default function Sidebar() {
         </NavLink>
 
         <NavLink to="/upcoming">
-          <FaClock /> Upcoming
+          {({ isActive }: { isActive: boolean }) => (
+            <div
+              className={`${styles.wrapper} ${isActive ? styles.active : ""}`}
+            >
+              <FaClock /> Upcoming
+            </div>
+          )}
         </NavLink>
 
         <NavLink to="/watchlist">
-          <FaList /> Watchlist
+          {({ isActive }: { isActive: boolean }) => (
+            <div
+              className={`${styles.wrapper} ${isActive ? styles.active : ""}`}
+            >
+              <FaList /> Watchlist
+            </div>
+          )}
         </NavLink>
 
         <NavLink to="/favorites">
-          <FaHeart /> Favorites
+          {({ isActive }: { isActive: boolean }) => (
+            <div
+              className={`${styles.wrapper} ${isActive ? styles.active : ""}`}
+            >
+              <FaHeart /> Favorites
+            </div>
+          )}
         </NavLink>
 
         <NavLink to="/profile">

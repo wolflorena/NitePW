@@ -24,7 +24,6 @@
   position: relative;
 }
 
-/* overlay ca în body::before */
 .page::before {
   content: "";
   position: absolute;

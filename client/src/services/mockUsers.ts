@@ -31,6 +31,18 @@ let users: User[] = [
   },
 ];
 
+export const mockUsers: User[] = [
+  {
+    id: 2,
+    username: "jane",
+    email: "janedoe@gmail.com",
+    password: "jane123",
+    gender: "Female",
+    birthdate: "2001-10-01",
+    isAdmin: false,
+  },
+];
+
 export type CreateUserInput = Omit<User, "id">;
 
 export async function mockCreateUser(

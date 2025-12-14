@@ -1,0 +1,172 @@
+:root {
+  --dark-gray: #222831;
+  --white: #eeeeee;
+  --yellow: rgb(255, 211, 105);
+  --light-gray: #393e46;
+  --black: #0e0e0e;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.page {
+  height: 100vh;
+  background-color: var(--light-gray);
+  display: flex;
+  gap: 10vw;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 25px;
+  font-weight: 100;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 100;
+  margin: 0 10px;
+  text-align: center;
+}
+
+h4 {
+  font-size: 12px;
+}
+
+.main {
+  width: 70vw;
+  display: flex;
+  position: relative;
+  height: 100vh;
+}
+
+.cards {
+  height: 100vh;
+  width: 30vw;
+  display: flex;
+  gap: 50px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.top,
+.bottom {
+  display: flex;
+  gap: 50px;
+}
+
+.card {
+  height: 15vh;
+  width: 15vw;
+  background-color: var(--dark-gray);
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.card h3 {
+  color: var(--white);
+}
+
+.card h1 {
+  color: var(--yellow);
+}
+
+.card h4 {
+  color: var(--yellow);
+}
+
+.profileInfo {
+  right: 0;
+  position: absolute;
+  height: 100%;
+  width: 30vw;
+
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  background-color: var(--dark-gray);
+  color: var(--white);
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 150px;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.header h3 {
+  margin-left: 20px;
+  font-size: 30px;
+}
+
+.avatarWrap {
+  height: 80px;
+  width: 80px;
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatarWrap img {
+  width: 80px;
+  height: 80px;
+  display: block;
+}
+
+.imgEdit {
+  visibility: hidden;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  z-index: 2;
+}
+
+.avatarWrap:hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: rgba(14, 14, 14, 0.9);
+  border-radius: 50%;
+  border: 1px solid black;
+  z-index: 1;
+}
+
+.avatarWrap:hover .imgEdit {
+  visibility: visible;
+}
+
+.credentials {
+  display: flex;
+  gap: 3vw;
+}
+
+.credentialName {
+  text-align: right;
+}
+
+.profileInfo h1,
+.profileInfo h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.profileInfo h2 {
+  font-weight: lighter;
+}

@@ -1,0 +1,67 @@
+:root {
+  --dark-gray: #222831;
+  --white: rgb(238, 238, 238);
+  --yellow: rgb(255, 211, 105);
+  --light-gray: #393e46;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.page {
+  height: 100vh;
+  background-color: var(--light-gray);
+  display: flex;
+  overflow: hidden;
+}
+
+.main {
+  width: 75vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  height: 100vh;
+  overflow: auto;
+}
+
+.table {
+  margin-left: 70px;
+  background-color: var(--dark-gray);
+  color: var(--white);
+  border-radius: 25px;
+  padding: 10px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  color: var(--yellow);
+}
+
+.table td,
+.table th {
+  border-bottom: 1px solid var(--light-gray);
+  padding: 8px;
+  text-align: center;
+}
+
+.actionBtn {
+  background-color: var(--yellow);
+  color: var(--dark-gray);
+  border: none;
+  border-radius: 5px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.noData {
+  color: var(--yellow);
+  margin-bottom: 20px;
+  font-weight: bold;
+}
