@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
-import { mockLogin } from "../services/mockAuth";
 import { errorAlert, successAlert } from "../services/alert";
 
 const BG_IMAGES = [
@@ -65,6 +64,7 @@ export default function Login() {
         localStorage.removeItem("idUser");
         localStorage.setItem("id", String(res.userId));
         localStorage.setItem("username", res.username);
+        localStorage.setItem("isAdmin", "true");
         navigate("/admin/users");
       } else {
         localStorage.removeItem("id");

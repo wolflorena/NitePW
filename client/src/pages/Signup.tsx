@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Signup.module.css";
-import { mockCreateUser, type Gender } from "../services/mockUsers";
+import { type Gender } from "../services/mockUsers";
 import { confirmAlert, errorAlert, successAlert } from "../services/alert";
 
 const BG_IMAGES = [
