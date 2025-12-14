@@ -6,7 +6,7 @@ export default function AdminSidebar() {
   const navigate = useNavigate();
 
   const logout = () => {
-    sessionStorage.clear();
+    localStorage.clear();
     navigate("/login");
   };
 

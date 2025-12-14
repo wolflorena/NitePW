@@ -40,22 +40,22 @@ export default function AdminEditTvShow() {
   const navigate = useNavigate();
 
   const initial = useMemo<FormState | null>(() => {
-    const idStr = sessionStorage.getItem("showId");
+    const idStr = localStorage.getItem("showId");
     const id = Number(idStr || "0");
     if (!id) return null;
 
     return {
       id,
-      name: sessionStorage.getItem("name") ?? "",
-      year: sessionStorage.getItem("year") ?? "",
-      audience: sessionStorage.getItem("audience") ?? "",
-      seasons: sessionStorage.getItem("seasons") ?? "",
-      genre: sessionStorage.getItem("genre") ?? "",
-      status: mapStatusFromStorage(sessionStorage.getItem("status")),
-      description: sessionStorage.getItem("description") ?? "",
-      streaming: sessionStorage.getItem("streaming") ?? "Netflix",
-      likes: sessionStorage.getItem("likes") ?? "0",
-      newSeason: sessionStorage.getItem("newseason") ?? "",
+      name: localStorage.getItem("name") ?? "",
+      year: localStorage.getItem("year") ?? "",
+      audience: localStorage.getItem("audience") ?? "",
+      seasons: localStorage.getItem("seasons") ?? "",
+      genre: localStorage.getItem("genre") ?? "",
+      status: mapStatusFromStorage(localStorage.getItem("status")),
+      description: localStorage.getItem("description") ?? "",
+      streaming: localStorage.getItem("streaming") ?? "Netflix",
+      likes: localStorage.getItem("likes") ?? "0",
+      newSeason: localStorage.getItem("newseason") ?? "",
     };
   }, []);
 
@@ -63,7 +63,7 @@ export default function AdminEditTvShow() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const adminId = sessionStorage.getItem("id");
+    const adminId = localStorage.getItem("id");
     if (!adminId) navigate("/login");
 
     if (!initial) navigate("/admin/tvshows");
@@ -137,7 +137,7 @@ export default function AdminEditTvShow() {
         "streaming",
         "likes",
         "newseason",
-      ].forEach((k) => sessionStorage.removeItem(k));
+      ].forEach((k) => localStorage.removeItem(k));
 
       navigate("/admin/tvshows");
     } finally {

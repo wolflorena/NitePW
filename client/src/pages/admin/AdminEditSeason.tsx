@@ -9,13 +9,13 @@ import { updateSeason } from "../../services/adminSeasonsEpisodesStore";
 export default function AdminEditSeason() {
   const navigate = useNavigate();
 
-  const adminId = sessionStorage.getItem("id");
+  const adminId = localStorage.getItem("id");
 
-  const showIdRaw = sessionStorage.getItem("showId");
-  const seasonIdRaw = sessionStorage.getItem("seasonId");
-  const nameRaw = sessionStorage.getItem("name");
-  const numberEpisodesRaw = sessionStorage.getItem("numberEpisodes");
-  const durationEpisodesRaw = sessionStorage.getItem("durationEpisodes");
+  const showIdRaw = localStorage.getItem("showId");
+  const seasonIdRaw = localStorage.getItem("seasonId");
+  const nameRaw = localStorage.getItem("name");
+  const numberEpisodesRaw = localStorage.getItem("numberEpisodes");
+  const durationEpisodesRaw = localStorage.getItem("durationEpisodes");
 
   const showId = Number(showIdRaw || "0");
   const seasonId = Number(seasonIdRaw || "0");
@@ -82,11 +82,11 @@ export default function AdminEditSeason() {
         durationEpisode,
       });
 
-      sessionStorage.removeItem("seasonId");
-      sessionStorage.removeItem("showId");
-      sessionStorage.removeItem("name");
-      sessionStorage.removeItem("numberEpisodes");
-      sessionStorage.removeItem("durationEpisodes");
+      localStorage.removeItem("seasonId");
+      localStorage.removeItem("showId");
+      localStorage.removeItem("name");
+      localStorage.removeItem("numberEpisodes");
+      localStorage.removeItem("durationEpisodes");
 
       navigate(`/admin/seasons/${showId}`);
     } catch (err) {

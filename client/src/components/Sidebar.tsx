@@ -6,12 +6,12 @@ import { FaHouse, FaClock, FaList, FaHeart, FaUser } from "react-icons/fa6";
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const username = sessionStorage.getItem("username") || "";
+  const username = localStorage.getItem("username") || "";
 
   const logout = async () => {
     const r = await confirmAlert("Do you want to log out?");
     if (!r.isConfirmed) return;
-    sessionStorage.clear();
+    localStorage.clear();
     navigate("/login");
   };
 

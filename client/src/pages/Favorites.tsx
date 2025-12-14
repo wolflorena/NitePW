@@ -7,7 +7,7 @@ import { favorites } from "../services/mockFavorites";
 
 export default function Favorites() {
   const [query, setQuery] = useState("");
-  const userId = Number(sessionStorage.getItem("idUser") || "0");
+  const userId = Number(localStorage.getItem("idUser") || "0");
 
   const favoriteShows = useMemo(() => {
     const q = query.trim().toLowerCase();

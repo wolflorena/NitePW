@@ -9,8 +9,8 @@ import { addSeason } from "../../services/adminSeasonsEpisodesStore";
 export default function AdminAddSeason() {
   const navigate = useNavigate();
 
-  const adminId = sessionStorage.getItem("id");
-  const showIdRaw = sessionStorage.getItem("addShowId");
+  const adminId = localStorage.getItem("id");
+  const showIdRaw = localStorage.getItem("addShowId");
   const showId = Number(showIdRaw || "0");
 
   const [name, setName] = useState("");
@@ -61,7 +61,7 @@ export default function AdminAddSeason() {
         icon: "success",
         confirmButtonText: "Ok",
       });
-      sessionStorage.removeItem("addShowId");
+      localStorage.removeItem("addShowId");
 
       navigate(`/admin/seasons/${showId}`);
     } catch (err) {

@@ -89,22 +89,28 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const res = await mockCreateUser({
+      const payload = {
         username: form.username.trim(),
         email: form.email.trim(),
         password: form.password,
         gender: (form.gender || "Other") as Gender,
         birthdate: form.birthdate || "2000-01-01",
         isAdmin: false,
+      };
+      const response = await fetch("http://localhost:8080/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        errorAlert(res.message);
-        return;
-      }
+      const res = await response
+        .json()
+        .catch(() => ({ message: "Unexpected server response" }));
 
       await successAlert("Account created successfully!");
       navigate("/login");
+    } catch (error) {
+      console.error("Signup error:", error);
+      errorAlert("An error occurred during signup. Please try again.");
     } finally {
       setLoading(false);
     }

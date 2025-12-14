@@ -19,7 +19,7 @@ export default function AdminSeasons() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const adminId = sessionStorage.getItem("id");
+    const adminId = localStorage.getItem("id");
     if (!adminId) {
       navigate("/login", { replace: true });
       return;
@@ -48,16 +48,16 @@ export default function AdminSeasons() {
   }, [showId]);
 
   const onAddSeason = () => {
-    sessionStorage.setItem("addShowId", String(showId));
+    localStorage.setItem("addShowId", String(showId));
     navigate("/admin/add-season");
   };
 
   const onEditSeason = (s: AdminSeason) => {
-    sessionStorage.setItem("seasonId", String(s.id));
-    sessionStorage.setItem("showId", String(s.tvShowId));
-    sessionStorage.setItem("name", s.name);
-    sessionStorage.setItem("numberEpisodes", String(s.numberOfEpisodes));
-    sessionStorage.setItem("durationEpisodes", String(s.durationEpisode));
+    localStorage.setItem("seasonId", String(s.id));
+    localStorage.setItem("showId", String(s.tvShowId));
+    localStorage.setItem("name", s.name);
+    localStorage.setItem("numberEpisodes", String(s.numberOfEpisodes));
+    localStorage.setItem("durationEpisodes", String(s.durationEpisode));
 
     navigate("/admin/edit-season");
   };

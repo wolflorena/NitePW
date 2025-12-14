@@ -17,7 +17,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const adminId = sessionStorage.getItem("id");
+    const adminId = localStorage.getItem("id");
     if (!adminId) navigate("/login");
   }, [navigate]);
 
@@ -47,13 +47,13 @@ export default function AdminUsers() {
   };
 
   const onEdit = (u: AdminUser) => {
-    sessionStorage.setItem("userId", String(u.id));
-    sessionStorage.setItem("username", u.username);
-    sessionStorage.setItem("email", u.email);
-    sessionStorage.setItem("gender", u.gender);
-    sessionStorage.setItem("birthdate", u.birthdate);
-    sessionStorage.setItem("admin", String(u.isAdmin));
-    sessionStorage.setItem("password", u.password ?? "");
+    localStorage.setItem("userId", String(u.id));
+    localStorage.setItem("username", u.username);
+    localStorage.setItem("email", u.email);
+    localStorage.setItem("gender", u.gender);
+    localStorage.setItem("birthdate", u.birthdate);
+    localStorage.setItem("admin", String(u.isAdmin));
+    localStorage.setItem("password", u.password ?? "");
 
     navigate("/admin/edit-user");
   };

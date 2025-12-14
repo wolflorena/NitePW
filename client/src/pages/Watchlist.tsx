@@ -14,7 +14,7 @@ type WatchItem = {
 
 export default function Watchlist() {
   const [query, setQuery] = useState("");
-  const userId = Number(sessionStorage.getItem("idUser") || "0");
+  const userId = Number(localStorage.getItem("idUser") || "0");
 
   const data = useMemo(() => {
     const q = query.trim().toLowerCase();

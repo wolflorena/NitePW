@@ -22,8 +22,8 @@ function convertMinutesToFormat(minutes: number) {
 }
 
 export default function Profile() {
-  const userId = Number(sessionStorage.getItem("idUser") || "0");
-  const username = sessionStorage.getItem("username") || "";
+  const userId = Number(localStorage.getItem("idUser") || "0");
+  const username = localStorage.getItem("username") || "";
 
   const user = mockUsers.find((u) => u.id === userId);
 

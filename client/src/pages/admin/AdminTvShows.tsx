@@ -24,7 +24,7 @@ export default function AdminTvShows() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const adminId = sessionStorage.getItem("id");
+    const adminId = localStorage.getItem("id");
     if (!adminId) navigate("/login");
   }, [navigate]);
 
@@ -54,17 +54,17 @@ export default function AdminTvShows() {
   };
 
   const onEdit = (s: AdminTvShow) => {
-    sessionStorage.setItem("showId", String(s.id));
-    sessionStorage.setItem("name", s.name);
-    sessionStorage.setItem("year", String(s.year));
-    sessionStorage.setItem("audience", s.audience);
-    sessionStorage.setItem("seasons", String(s.seasons));
-    sessionStorage.setItem("genre", s.genre);
-    sessionStorage.setItem("status", s.status);
-    sessionStorage.setItem("description", s.description);
-    sessionStorage.setItem("streaming", s.streaming);
-    sessionStorage.setItem("likes", String(s.likes));
-    sessionStorage.setItem("newseason", String(s.newSeason ?? ""));
+    localStorage.setItem("showId", String(s.id));
+    localStorage.setItem("name", s.name);
+    localStorage.setItem("year", String(s.year));
+    localStorage.setItem("audience", s.audience);
+    localStorage.setItem("seasons", String(s.seasons));
+    localStorage.setItem("genre", s.genre);
+    localStorage.setItem("status", s.status);
+    localStorage.setItem("description", s.description);
+    localStorage.setItem("streaming", s.streaming);
+    localStorage.setItem("likes", String(s.likes));
+    localStorage.setItem("newseason", String(s.newSeason ?? ""));
 
     navigate("/admin/edit-tvshow");
   };

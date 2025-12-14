@@ -24,13 +24,13 @@ export default function Login() {
     return BG_IMAGES[idx];
   }, []);
 
-  const [username, setUsername] = useState("");
+  const [email, setemail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const messages: string[] = [];
-    if (!username.trim()) messages.push("Username is required!");
+    if (!email.trim()) messages.push("Email is required!");
     if (!password) messages.push("Password is required!");
     return messages;
   };
@@ -47,28 +47,34 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await mockLogin(username.trim(), password);
-
-      if (!res.ok) {
-        errorAlert(res.message);
-        return;
-      }
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
+      const res = await response.json();
 
       await successAlert("Login successful!");
 
-      sessionStorage.setItem("isAdmin", String(res.isAdmin));
+      if (res.token) localStorage.setItem("token", res.token);
 
-      if (res.isAdmin) {
-        sessionStorage.removeItem("idUser");
-        sessionStorage.setItem("id", String(res.id));
-        sessionStorage.setItem("username", res.username);
+      if (res.isAdmin === true) {
+        localStorage.removeItem("idUser");
+        localStorage.setItem("id", String(res.userId));
+        localStorage.setItem("username", res.username);
         navigate("/admin/users");
       } else {
-        sessionStorage.removeItem("id");
-        sessionStorage.setItem("idUser", String(res.id));
-        sessionStorage.setItem("username", res.username);
+        localStorage.removeItem("id");
+        localStorage.setItem("idUser", String(res.userId));
+        localStorage.setItem("username", res.username);
         navigate("/app");
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      errorAlert("An error occurred during login. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -84,13 +90,13 @@ export default function Login() {
 
         <form className={styles.form} onSubmit={onSubmit}>
           <div className={styles.labelInput}>
-            <label htmlFor="username">Username</label>
+            <label htmlFor="email">Email</label>
             <input
-              id="username"
+              id="email"
               type="text"
-              value={username}
-              onChange={(ev) => setUsername(ev.target.value)}
-              autoComplete="username"
+              value={email}
+              onChange={(ev) => setemail(ev.target.value)}
+              autoComplete="email"
             />
           </div>
 

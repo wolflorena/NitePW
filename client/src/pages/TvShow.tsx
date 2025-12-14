@@ -21,7 +21,7 @@ import {
 export default function TvShow() {
   const { id } = useParams();
   const showId = Number(id);
-  const userId = Number(sessionStorage.getItem("idUser") || "0");
+  const userId = Number(localStorage.getItem("idUser") || "0");
 
   const details = tvShowDetailsById[showId];
 

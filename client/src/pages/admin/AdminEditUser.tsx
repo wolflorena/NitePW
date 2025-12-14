@@ -12,16 +12,16 @@ import {
 export default function AdminEditUser() {
   const navigate = useNavigate();
 
-  const adminId = sessionStorage.getItem("id");
+  const adminId = localStorage.getItem("id");
 
-  const userId = Number(sessionStorage.getItem("userId") || "0");
-  const initialUsername = sessionStorage.getItem("username") ?? "";
-  const initialEmail = sessionStorage.getItem("email") ?? "";
-  const initialGender = (sessionStorage.getItem("gender") ??
+  const userId = Number(localStorage.getItem("userId") || "0");
+  const initialUsername = localStorage.getItem("username") ?? "";
+  const initialEmail = localStorage.getItem("email") ?? "";
+  const initialGender = (localStorage.getItem("gender") ??
     "") as AdminUserGender;
-  const initialBirthdate = sessionStorage.getItem("birthdate") ?? "";
-  const initialAdmin = sessionStorage.getItem("admin") ?? "false";
-  const password = sessionStorage.getItem("password") ?? "";
+  const initialBirthdate = localStorage.getItem("birthdate") ?? "";
+  const initialAdmin = localStorage.getItem("admin") ?? "false";
+  const password = localStorage.getItem("password") ?? "";
 
   const [username, setUsername] = useState(initialUsername);
   const [email, setEmail] = useState(initialEmail);
@@ -95,7 +95,7 @@ export default function AdminEditUser() {
         "birthdate",
         "admin",
         "password",
-      ].forEach((k) => sessionStorage.removeItem(k));
+      ].forEach((k) => localStorage.removeItem(k));
 
       navigate("/admin/users");
     } catch (err) {

@@ -23,7 +23,7 @@ export default function Home() {
   }, [randomImg]);
 
   const handleGetStarted = () => {
-    sessionStorage.clear();
+    localStorage.clear();
     navigate("/login");
   };
 

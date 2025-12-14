@@ -9,17 +9,17 @@ import { addEpisode } from "../../services/adminSeasonsEpisodesStore";
 export default function AdminAddEpisode() {
   const navigate = useNavigate();
 
-  const adminId = sessionStorage.getItem("id");
+  const adminId = localStorage.getItem("id");
   if (!adminId) {
     navigate("/login");
   }
 
   const showId = useMemo(
-    () => Number(sessionStorage.getItem("addShowId") || "0"),
+    () => Number(localStorage.getItem("addShowId") || "0"),
     []
   );
   const seasonId = useMemo(
-    () => Number(sessionStorage.getItem("addSeasonId") || "0"),
+    () => Number(localStorage.getItem("addSeasonId") || "0"),
     []
   );
 
@@ -33,7 +33,7 @@ export default function AdminAddEpisode() {
       await Swal.fire({
         icon: "error",
         title: "Missing context",
-        text: "showId / seasonId not found in sessionStorage (addShowId, addSeasonId).",
+        text: "showId / seasonId not found in localStorage (addShowId, addSeasonId).",
       });
       return;
     }

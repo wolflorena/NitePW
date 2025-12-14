@@ -10,11 +10,11 @@ export default function AdminEditEpisode() {
   const navigate = useNavigate();
 
   const initial = useMemo(() => {
-    const adminId = sessionStorage.getItem("id");
-    const showId = sessionStorage.getItem("showId");
-    const seasonId = sessionStorage.getItem("seasonId");
-    const episodeId = sessionStorage.getItem("episodeId");
-    const name = sessionStorage.getItem("name") ?? "";
+    const adminId = localStorage.getItem("id");
+    const showId = localStorage.getItem("showId");
+    const seasonId = localStorage.getItem("seasonId");
+    const episodeId = localStorage.getItem("episodeId");
+    const name = localStorage.getItem("name") ?? "";
 
     return {
       adminId,
@@ -66,7 +66,7 @@ export default function AdminEditEpisode() {
       await updateEpisodeName(initial.episodeId, name.trim());
 
       ["episodeId", "seasonId", "showId", "name"].forEach((k) =>
-        sessionStorage.removeItem(k)
+        localStorage.removeItem(k)
       );
 
       navigate(`/admin/episodes/${initial.showId}/${initial.seasonId}`);
