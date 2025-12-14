@@ -1,0 +1,78 @@
+:root {
+  --dark-gray: #222831;
+  --white: #eeeeee;
+  --yellow: #ffd369;
+  --light-gray: #393e46;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+.page {
+  background-color: var(--light-gray);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main {
+  width: 79vw;
+  height: 100vh;
+  overflow: auto;
+  padding: 20px 0;
+}
+
+.table {
+  margin-left: 15px;
+  background-color: var(--dark-gray);
+  color: var(--white);
+  border-radius: 25px;
+  padding: 10px;
+  width: 77vw;
+  border-collapse: collapse;
+}
+
+.table thead {
+  color: var(--yellow);
+}
+
+.table td,
+.table th {
+  border-bottom: 1px solid var(--light-gray);
+  padding: 10px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.descriptionCell {
+  font-size: 10px;
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actionBtn {
+  background-color: var(--yellow);
+  color: var(--dark-gray);
+  border: none;
+  border-radius: 5px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+  color: var(--white);
+}
+
+.noData {
+  color: var(--yellow);
+  margin-top: 20px;
+  font-weight: bold;
+  text-align: center;
+}

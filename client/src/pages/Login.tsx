@@ -56,10 +56,15 @@ export default function Login() {
 
       await successAlert("Login successful!");
 
+      sessionStorage.setItem("isAdmin", String(res.isAdmin));
+
       if (res.isAdmin) {
+        sessionStorage.removeItem("idUser");
         sessionStorage.setItem("id", String(res.id));
-        navigate("/admin");
+        sessionStorage.setItem("username", res.username);
+        navigate("/admin/users");
       } else {
+        sessionStorage.removeItem("id");
         sessionStorage.setItem("idUser", String(res.id));
         sessionStorage.setItem("username", res.username);
         navigate("/app");
