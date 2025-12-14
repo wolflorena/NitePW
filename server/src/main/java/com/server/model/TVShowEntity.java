@@ -38,11 +38,15 @@ public class TVShowEntity {
     private Integer likes;
 
     // Store your "newSeason" as a date instead of string
+    @Column(nullable = true)
     private LocalDate newSeason;
 
     // store URLs/paths (files themselves usually stored in S3/disk)
+    @Column(columnDefinition = "text")
     private String poster;
+    @Column(columnDefinition = "text")
     private String banner;
+    @Column(columnDefinition = "text")
     private String logo;
 
     @OneToMany(mappedBy = "tvShow", cascade = CascadeType.ALL, orphanRemoval = true)
