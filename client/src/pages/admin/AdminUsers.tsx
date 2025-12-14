@@ -10,6 +10,7 @@ import {
   listUsers,
   type AdminUser,
 } from "../../services/adminUsersStore";
+import { errorAlert } from "../../services/alert";
 
 export default function AdminUsers() {
   const navigate = useNavigate();
@@ -22,12 +23,36 @@ export default function AdminUsers() {
   }, [navigate]);
 
   useEffect(() => {
-    (async () => {
+    const fetchUsers = async () => {
       setLoading(true);
-      const data = await listUsers();
-      setUsers(data);
-      setLoading(false);
-    })();
+
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch("http://localhost:8080/users", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          errorAlert(data?.message || "Failed to load users");
+          return;
+        }
+
+        setUsers(data);
+      } catch (error) {
+        errorAlert("Network/server error while loading users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   const onDelete = async (userId: number) => {
