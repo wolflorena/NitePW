@@ -184,7 +184,7 @@ export default function App() {
       />
 
       <Route
-        path="/admin/users/edit"
+        path="/admin/edit-user"
         element={
           <AdminRoute>
             <AdminEditUser />

@@ -67,8 +67,37 @@ export default function AdminUsers() {
 
     if (!res.isConfirmed) return;
 
-    await deleteUserById(userId);
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`http://localhost:8080/users/${userId}`, {
+        method: "DELETE",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response
+          .json()
+          .catch(() => ({ message: "Delete failed" }));
+        throw new Error(data.message);
+      }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Deleted",
+        text: "User deleted successfully",
+      });
+
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err instanceof Error ? err.message : "Delete failed",
+      });
+    }
   };
 
   const onEdit = (u: AdminUser) => {
@@ -78,7 +107,6 @@ export default function AdminUsers() {
     localStorage.setItem("gender", u.gender);
     localStorage.setItem("birthdate", u.birthdate);
     localStorage.setItem("admin", String(u.isAdmin));
-    localStorage.setItem("password", u.password ?? "");
 
     navigate("/admin/edit-user");
   };
