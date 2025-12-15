@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
 import AdminSidebar from "../../components/AdminSidebar";
 import styles from "./AdminTvShows.module.css";
-import {
-  deleteSeasonById,
-  listSeasons,
-  type AdminSeason,
-} from "../../services/adminSeasonsEpisodesStore";
+import { type AdminSeason } from "../../services/adminSeasonsEpisodesStore";
+import { FaPen, FaTrash } from "react-icons/fa6";
 
 export default function AdminSeasons() {
   const navigate = useNavigate();
@@ -32,15 +29,42 @@ export default function AdminSeasons() {
   useEffect(() => {
     let alive = true;
 
-    (async () => {
+    const fetchSeasons = async () => {
       setLoading(true);
       try {
-        const data = await listSeasons(showId);
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+          `http://localhost:8080/seasons/by-tvshow/${showId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.message || "Failed to load seasons");
+        }
+
         if (alive) setSeasons(data);
+      } catch (err) {
+        console.error(err);
+        await Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to load seasons",
+        });
       } finally {
         if (alive) setLoading(false);
       }
-    })();
+    };
+
+    fetchSeasons();
 
     return () => {
       alive = false;
@@ -74,8 +98,40 @@ export default function AdminSeasons() {
 
     if (!confirm.isConfirmed) return;
 
-    await deleteSeasonById(showId, seasonId);
-    setSeasons((prev) => prev.filter((x) => x.id !== seasonId));
+    try {
+      const token = localStorage.getItem("token"); // if protected
+
+      const response = await fetch(
+        `http://localhost:8080/seasons/${seasonId}`,
+        {
+          method: "DELETE",
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response
+          .json()
+          .catch(() => ({ message: "Delete failed" }));
+        throw new Error(data.message);
+      }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Deleted",
+        text: "Season deleted successfully",
+      });
+
+      setSeasons((prev) => prev.filter((x) => x.id !== seasonId));
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err instanceof Error ? err.message : "Delete failed",
+      });
+    }
   };
 
   const noDataText =
@@ -116,15 +172,7 @@ export default function AdminSeasons() {
                 <th>{idx + 1}</th>
 
                 <td>
-                  <button
-                    className={styles.linkButton}
-                    onClick={() =>
-                      navigate(`/admin/episodes/${showId}/${s.id}`)
-                    }
-                    title="Open episodes"
-                  >
-                    {s.name}
-                  </button>
+                  <Link to={`/admin/episodes/${showId}/${s.id}`}>{s.name}</Link>
                 </td>
 
                 <td>{s.numberOfEpisodes}</td>
@@ -137,7 +185,7 @@ export default function AdminSeasons() {
                     aria-label="Delete season"
                     title="Delete"
                   >
-                    <i className="fa-solid fa-trash" />
+                    <FaTrash />
                   </button>
                 </td>
 
@@ -148,7 +196,7 @@ export default function AdminSeasons() {
                     aria-label="Edit season"
                     title="Edit"
                   >
-                    <i className="fa-solid fa-pen" />
+                    <FaPen />
                   </button>
                 </td>
               </tr>

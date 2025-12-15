@@ -49,7 +49,26 @@ export default function AdminAddEpisode() {
 
     setLoading(true);
     try {
-      await addEpisode(showId, seasonId, name.trim());
+      const token = localStorage.getItem("token");
+      const payload = {
+        tvShowId: showId,
+        seasonId: seasonId,
+        name: name.trim(),
+      };
+
+      const response = await fetch("http://localhost:8080/episodes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.message || "Add failed");
+      }
 
       await Swal.fire({
         icon: "success",
@@ -59,8 +78,13 @@ export default function AdminAddEpisode() {
       });
 
       setName("");
-
       navigate(`/admin/episodes/${showId}/${seasonId}`);
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err instanceof Error ? err.message : "Add failed",
+      });
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import {
   listEpisodes,
   type AdminEpisode,
 } from "../../services/adminSeasonsEpisodesStore";
+import { FaPen, FaTrash } from "react-icons/fa6";
 
 export default function AdminEpisodes() {
   const navigate = useNavigate();
@@ -24,21 +25,25 @@ export default function AdminEpisodes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const adminId = localStorage.getItem("id");
-    if (!adminId) {
-      navigate("/login", { replace: true });
-      return;
-    }
-  }, [navigate]);
-
-  useEffect(() => {
     let alive = true;
 
     (async () => {
       setLoading(true);
       try {
-        const data = await listEpisodes(showId, seasonId);
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:8080/episodes/by-season/${seasonId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        );
+        const data = await response.json();
         if (alive) setEpisodes(data);
+      } catch (err) {
+        if (alive) setEpisodes([]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -47,7 +52,7 @@ export default function AdminEpisodes() {
     return () => {
       alive = false;
     };
-  }, [showId, seasonId]);
+  }, [seasonId]);
 
   const onAddEpisode = () => {
     localStorage.setItem("addShowId", String(showId));
@@ -76,9 +81,27 @@ export default function AdminEpisodes() {
 
     if (!confirm.isConfirmed) return;
 
-    await deleteEpisodeById(ep.id);
-
-    setEpisodes((prev) => prev.filter((x) => x.id !== ep.id));
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:8080/episodes/${ep.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.message || "Delete failed");
+      }
+      setEpisodes((prev) => prev.filter((x) => x.id !== ep.id));
+    } catch (err) {
+      await Swal.fire({
+        title: "Error",
+        text: err instanceof Error ? err.message : "Delete failed",
+        icon: "error",
+      });
+    }
   };
 
   const noDataText =
@@ -122,7 +145,7 @@ export default function AdminEpisodes() {
                     aria-label="Delete episode"
                     title="Delete"
                   >
-                    <i className="fa-solid fa-trash" />
+                    <FaTrash />
                   </button>
                 </td>
 
@@ -133,7 +156,7 @@ export default function AdminEpisodes() {
                     aria-label="Edit episode"
                     title="Edit"
                   >
-                    <i className="fa-solid fa-pen" />
+                    <FaPen />
                   </button>
                 </td>
               </tr>
