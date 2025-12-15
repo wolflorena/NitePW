@@ -40,7 +40,7 @@ export default function Favorites() {
           {favoriteShows.map((show) => (
             <Link key={show.id} to={`/tvshow/${show.id}`}>
               <div className={styles.card}>
-                <img src={`/img/${show.poster}`} alt={show.name} />
+                <img src={`${show.poster}`} alt={show.name} />
                 <h3>{show.name}</h3>
               </div>
             </Link>

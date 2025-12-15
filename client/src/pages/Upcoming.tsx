@@ -44,7 +44,7 @@ export default function Upcoming() {
           {upcomingList.map((show) => (
             <Link key={show.id} to={`/tvshow/${show.id}`}>
               <div className={styles.card}>
-                <img src={`/img/${show.poster}`} alt={show.name} />
+                <img src={`${show.poster}`} alt={show.name} />
 
                 <div className={styles.cardTextCenter}>
                   <h3>{show.daysUntilNewSeason} days</h3>

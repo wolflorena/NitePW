@@ -110,10 +110,7 @@ export default function Watchlist() {
               {data.currentlyWatching.map((item) => (
                 <Link key={item.show.id} to={`/tvshow/${item.show.id}`}>
                   <div className={styles.card}>
-                    <img
-                      src={`/img/${item.show.poster}`}
-                      alt={item.show.name}
-                    />
+                    <img src={`${item.show.poster}`} alt={item.show.name} />
                     <div className={styles.pieContainer}>
                       <div
                         className={styles.pie}
@@ -141,7 +138,7 @@ export default function Watchlist() {
               {data.notStarted.map((show) => (
                 <Link key={show.id} to={`/tvshow/${show.id}`}>
                   <div className={styles.card}>
-                    <img src={`/img/${show.poster}`} alt={show.name} />
+                    <img src={`${show.poster}`} alt={show.name} />
                     <h3>{show.name}</h3>
                   </div>
                 </Link>
@@ -161,10 +158,7 @@ export default function Watchlist() {
               {data.upToDate.map((item) => (
                 <Link key={item.show.id} to={`/tvshow/${item.show.id}`}>
                   <div className={styles.card}>
-                    <img
-                      src={`/img/${item.show.poster}`}
-                      alt={item.show.name}
-                    />
+                    <img src={`${item.show.poster}`} alt={item.show.name} />
                     <h3>{item.show.name}</h3>
                   </div>
                 </Link>
@@ -184,10 +178,7 @@ export default function Watchlist() {
               {data.finished.map((item) => (
                 <Link key={item.show.id} to={`/tvshow/${item.show.id}`}>
                   <div className={styles.card}>
-                    <img
-                      src={`/img/${item.show.poster}`}
-                      alt={item.show.name}
-                    />
+                    <img src={`${item.show.poster}`} alt={item.show.name} />
                     <h3>{item.show.name}</h3>
                   </div>
                 </Link>

@@ -1,20 +1,52 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "./AppHome.module.css";
-import { mockShows } from "../services/mockShows";
+import { type Show } from "../services/mockShows";
 import Sidebar from "../components/Sidebar";
+import { errorAlert } from "../services/alert";
 
 export default function AppHome() {
+  const [shows, setShows] = useState<Show[]>([]);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const fetchFavoritesShows = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        console.log("Token:", token);
+
+        const response = await fetch("http://localhost:8080/tvshows/popular", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        const data = await response.json();
+
+        console.log("Fetched shows:", data);
+        if (!response.ok) {
+          errorAlert(data?.message || "Failed to load TV shows");
+          return;
+        }
+        setShows(data);
+      } catch {
+        errorAlert("Network/server error while loading TV shows");
+      }
+    };
+
+    fetchFavoritesShows();
+  }, []);
 
   const filteredShows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return mockShows;
-    return mockShows.filter((s) => s.name.toLowerCase().includes(q));
-  }, [query]);
+    if (!q) return shows;
+    return shows.filter((s) => s.name.toLowerCase().includes(q));
+  }, [query, shows]);
 
   const popularTop5 = useMemo(() => {
-    return [...filteredShows].sort((a, b) => b.likes - a.likes).slice(0, 5);
+    return [...filteredShows].slice(0, 5);
   }, [filteredShows]);
 
   const exploreTop5 = useMemo(() => filteredShows.slice(0, 5), [filteredShows]);
@@ -45,7 +77,7 @@ export default function AppHome() {
               {popularTop5.map((show) => (
                 <Link key={show.id} to={`/tvshow/${show.id}`}>
                   <div className={styles.card}>
-                    <img src={`/img/${show.poster}`} alt={show.name} />
+                    <img src={`${show.poster}`} alt={show.name} />
                     <h3>{show.name}</h3>
                   </div>
                 </Link>
@@ -65,7 +97,7 @@ export default function AppHome() {
               {exploreTop5.map((show) => (
                 <Link key={show.id} to={`/tvshow/${show.id}`}>
                   <div className={styles.card}>
-                    <img src={`/img/${show.poster}`} alt={show.name} />
+                    <img src={`${show.poster}`} alt={show.name} />
                     <h3>{show.name}</h3>
                   </div>
                 </Link>

@@ -1,18 +1,50 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "./AllShows.module.css";
-import { mockShows } from "../services/mockShows";
+import { type Show } from "../services/mockShows";
 
 import Sidebar from "../components/Sidebar";
+import { errorAlert } from "../services/alert";
 
 export default function AllShows() {
+  const [shows, setShows] = useState<Show[]>([]);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const fetchShows = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        console.log("Token:", token);
+
+        const response = await fetch("http://localhost:8080/tvshows", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        const data = await response.json();
+
+        console.log("Fetched shows:", data);
+        if (!response.ok) {
+          errorAlert(data?.message || "Failed to load TV shows");
+          return;
+        }
+        setShows(data);
+      } catch {
+        errorAlert("Network/server error while loading TV shows");
+      }
+    };
+
+    fetchShows();
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return mockShows;
-    return mockShows.filter((s) => s.name.toLowerCase().includes(q));
-  }, [query]);
+    if (!q) return shows;
+    return shows.filter((s) => s.name.toLowerCase().includes(q));
+  }, [query, shows]);
 
   return (
     <div className={styles.page}>
@@ -31,7 +63,7 @@ export default function AllShows() {
           {filtered.map((show) => (
             <Link key={show.id} to={`/tvshow/${show.id}`}>
               <div className={styles.card}>
-                <img src={`/img/${show.poster}`} alt={show.name} />
+                <img src={`${show.poster}`} alt={show.name} />
                 <h3>{show.name}</h3>
               </div>
             </Link>

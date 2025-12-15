@@ -92,7 +92,7 @@ export default function TvShow() {
       >
         <div className={styles.info}>
           <img
-            src={`/img/${details.logo}`}
+            src={`${details.logo}`}
             alt={details.id.toString()}
             className={styles.title}
           />
@@ -106,7 +106,7 @@ export default function TvShow() {
             </ul>
 
             <img
-              src={`/img/${details.streaming}.png`}
+              src={`${details.streaming}.png`}
               alt={details.streaming}
               className={styles.streaming}
             />

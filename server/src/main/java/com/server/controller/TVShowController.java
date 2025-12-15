@@ -7,6 +7,7 @@ import com.server.mapper.TVShowMapper;
 import com.server.model.TVShowEntity;
 import com.server.repository.TVShowRepository;
 import com.server.service.TVShowService;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +39,16 @@ public class TVShowController {
     @GetMapping
     public List<TVShowResponse> getAll() {
         return repository.findAll()
+                .stream()
+                .map(TVShowMapper::toResponse)
+                .toList();
+    }
+
+    @GetMapping("/popular")
+    public List<TVShowResponse> getPopular() {
+        return repository.findAll(
+                        Sort.by(Sort.Direction.DESC, "likes")
+                )
                 .stream()
                 .map(TVShowMapper::toResponse)
                 .toList();
