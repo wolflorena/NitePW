@@ -77,4 +77,9 @@ public class TVShowController {
         repository.deleteById(id);
         return ResponseEntity.noContent().build(); // 204
     }
+    // GET /tv-shows/not-started/{userId}
+    @GetMapping("/not-started/{userId}")
+    public List<TVShowEntity> getNotStartedShows(@PathVariable Long userId) {
+        return service.getShowsUserHasNotStarted(userId);
+    }
 }

@@ -13,7 +13,6 @@ export default function AdminEditUser() {
   const navigate = useNavigate();
 
   const adminId = localStorage.getItem("id");
-
   const userId = Number(localStorage.getItem("userId") || "0");
   const initialUsername = localStorage.getItem("username") ?? "";
   const initialEmail = localStorage.getItem("email") ?? "";
@@ -56,11 +55,13 @@ export default function AdminEditUser() {
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (validate.length) {
+    const errors = validate;
+
+    if (errors.length) {
       await Swal.fire({
         icon: "error",
         title: "Validation",
-        html: validate.map((x) => `• ${x}`).join("<br/>"),
+        html: errors.map((x: string) => `• ${x}`).join("<br/>"),
       });
       return;
     }
@@ -77,15 +78,38 @@ export default function AdminEditUser() {
     if (!confirm.isConfirmed) return;
 
     setSaving(true);
+
     try {
-      await updateUser(userId, {
+      const token = localStorage.getItem("token"); // if your API is protected
+
+      // Build payload (don’t send password if empty)
+      const payload: any = {
         username: username.trim(),
         email: email.trim(),
         gender,
         birthdate,
         isAdmin,
-        password,
+      };
+      if (password && password.trim().length > 0) {
+        payload.password = password;
+      }
+
+      const response = await fetch(`http://localhost:8080/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(payload),
       });
+
+      const data = await response
+        .json()
+        .catch(() => ({ message: "Unexpected server response" }));
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Put failed");
+      }
 
       [
         "userId",
@@ -96,6 +120,12 @@ export default function AdminEditUser() {
         "admin",
         "password",
       ].forEach((k) => localStorage.removeItem(k));
+
+      await Swal.fire({
+        icon: "success",
+        title: "Saved",
+        text: "User updated successfully!",
+      });
 
       navigate("/admin/users");
     } catch (err) {

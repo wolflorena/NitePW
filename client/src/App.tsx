@@ -173,6 +173,14 @@ export default function App() {
           </AdminRoute>
         }
       />
+      <Route
+        path="/admin/add-episode"
+        element={
+          <AdminRoute>
+            <AdminAddEpisode />
+          </AdminRoute>
+        }
+      />
 
       <Route
         path="/admin/edit-season"
@@ -184,7 +192,7 @@ export default function App() {
       />
 
       <Route
-        path="/admin/users/edit"
+        path="/admin/edit-user"
         element={
           <AdminRoute>
             <AdminEditUser />

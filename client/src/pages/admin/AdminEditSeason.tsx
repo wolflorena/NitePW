@@ -75,12 +75,34 @@ export default function AdminEditSeason() {
 
     setSaving(true);
     try {
-      await updateSeason(seasonId, {
+      const token = localStorage.getItem("token"); // if your API is protected
+
+      const payload = {
         tvShowId: showId,
         name: name.trim(),
         numberOfEpisodes,
         durationEpisode,
-      });
+      };
+
+      const response = await fetch(
+        `http://localhost:8080/seasons/${seasonId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response
+        .json()
+        .catch(() => ({ message: "Unexpected server response" }));
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Put failed");
+      }
 
       localStorage.removeItem("seasonId");
       localStorage.removeItem("showId");

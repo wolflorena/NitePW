@@ -11,6 +11,20 @@ export default function Sidebar() {
   const logout = async () => {
     const r = await confirmAlert("Do you want to log out?");
     if (!r.isConfirmed) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("http://localhost:8080/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+    } catch (err) {
+      // Optionally handle error (e.g., show a message)
+    }
+
     localStorage.clear();
     navigate("/login");
   };

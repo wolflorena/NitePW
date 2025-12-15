@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { FaPen, FaTrash } from "react-icons/fa6";
 
 import AdminSidebar from "../../components/AdminSidebar";
 import styles from "./AdminAddTvShow.module.css";
-import { addSeason } from "../../services/adminSeasonsEpisodesStore";
 
 export default function AdminAddSeason() {
   const navigate = useNavigate();
@@ -53,7 +53,31 @@ export default function AdminAddSeason() {
 
     setLoading(true);
     try {
-      await addSeason(showId, name.trim(), numberOfEpisodes, durationEpisode);
+      const token = localStorage.getItem("token");
+
+      const payload = {
+        tvShowId: Number(showId),
+        name: name.trim(),
+        numberOfEpisodes: Number(numberOfEpisodes),
+        durationEpisode: Number(durationEpisode),
+      };
+
+      const response = await fetch("http://localhost:8080/seasons", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response
+        .json()
+        .catch(() => ({ message: "Unexpected server response" }));
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Post failed");
+      }
 
       await Swal.fire({
         title: "Success!",
@@ -61,8 +85,8 @@ export default function AdminAddSeason() {
         icon: "success",
         confirmButtonText: "Ok",
       });
-      localStorage.removeItem("addShowId");
 
+      localStorage.removeItem("addShowId");
       navigate(`/admin/seasons/${showId}`);
     } catch (err) {
       await Swal.fire({

@@ -63,13 +63,37 @@ export default function AdminEditEpisode() {
 
     setLoading(true);
     try {
-      await updateEpisodeName(initial.episodeId, name.trim());
+      const token = localStorage.getItem("token");
+      const payload = { name: name.trim() };
+
+      const response = await fetch(
+        `http://localhost:8080/episodes/${initial.episodeId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data?.message || "Update failed");
+      }
 
       ["episodeId", "seasonId", "showId", "name"].forEach((k) =>
         localStorage.removeItem(k)
       );
 
       navigate(`/admin/episodes/${initial.showId}/${initial.seasonId}`);
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err instanceof Error ? err.message : "Update failed",
+      });
     } finally {
       setLoading(false);
     }

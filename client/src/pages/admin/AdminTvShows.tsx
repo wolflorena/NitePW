@@ -29,12 +29,35 @@ export default function AdminTvShows() {
   }, [navigate]);
 
   useEffect(() => {
-    (async () => {
+    const fetchTvShows = async () => {
       setLoading(true);
-      const data = await listTvShows();
-      setShows(data);
-      setLoading(false);
-    })();
+
+      try {
+        const token = localStorage.getItem("token"); // if endpoint is protected
+
+        const response = await fetch("http://localhost:8080/tvshows", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.message || "Failed to load TV shows");
+        }
+
+        setShows(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTvShows();
   }, []);
 
   const onDelete = async (showId: number) => {

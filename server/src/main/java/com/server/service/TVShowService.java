@@ -5,6 +5,8 @@ import com.server.model.TVShowEntity;
 import com.server.repository.TVShowRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class TVShowService {
 
@@ -35,5 +37,8 @@ public class TVShowService {
         if (req.logo != null) show.setLogo(req.logo);
 
         return repository.save(show);
+    }
+    public List<TVShowEntity> getShowsUserHasNotStarted(Long userId) {
+        return repository.findAllNotStartedByUser(userId);
     }
 }

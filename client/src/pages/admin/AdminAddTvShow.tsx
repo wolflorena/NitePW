@@ -68,11 +68,15 @@ export default function AdminAddTvShow() {
 
     setLoading(true);
     try {
-      const poster = await fileToDataUrl(posterFile);
-      const banner = await fileToDataUrl(bannerFile);
-      const logo = await fileToDataUrl(logoFile);
+      const [poster, banner, logo] = await Promise.all([
+        fileToDataUrl(posterFile),
+        fileToDataUrl(bannerFile),
+        fileToDataUrl(logoFile),
+      ]);
 
-      await createTvShow({
+      const token = localStorage.getItem("token");
+
+      const payload = {
         name: name.trim(),
         year: Number(year),
         audience: audience.trim(),
@@ -86,7 +90,24 @@ export default function AdminAddTvShow() {
         poster,
         banner,
         logo,
+      };
+
+      const response = await fetch("http://localhost:8080/tvshows", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(payload),
       });
+
+      const data = await response
+        .json()
+        .catch(() => ({ message: "Unexpected server response" }));
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Create tv show failed");
+      }
 
       await Swal.fire({
         icon: "success",
@@ -96,6 +117,12 @@ export default function AdminAddTvShow() {
       });
 
       navigate("/admin/tvshows");
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err instanceof Error ? err.message : "Create failed",
+      });
     } finally {
       setLoading(false);
     }
