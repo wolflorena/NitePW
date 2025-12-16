@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import styles from "./Profile.module.css";
 
@@ -24,8 +24,31 @@ function convertMinutesToFormat(minutes: number) {
 export default function Profile() {
   const userId = Number(localStorage.getItem("idUser") || "0");
   const username = localStorage.getItem("username") || "";
+  const token = localStorage.getItem("token");
 
-  const user = mockUsers.find((u) => u.id === userId);
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/users/${userId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+    })();
+  }, [userId, token]);
+  console.log("User data:", user);
 
   const stats = useMemo(() => {
     const watchedForUser = watched.filter((w) => w.userId === userId);
