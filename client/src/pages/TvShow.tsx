@@ -3,57 +3,43 @@ import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import styles from "./TvShow.module.css";
 
-import {
-  episodesBySeasonId,
-  seasonsByShowId,
-  tvShowDetailsById,
-} from "../services/mockTvShowDetails";
+type Season = { id: number; name: string };
+type Episode = { id: number; name: string };
+type TvShowDetails = {
+  id: number;
+  year: number;
+  audience: string;
+  seasons: number;
+  status: string;
+  description: string;
+  streaming: string;
+  banner: string; // if you store data URL, this will be a big string
+  logo: string; // same
+};
 
-import {
-  getWatchedEpisodeIds,
-  isAdded,
-  isFavorite,
-  toggleAdded,
-  toggleEpisodeWatched,
-  toggleFavorite,
-} from "../services/mockUserLists";
+const API = "http://localhost:8080";
 
 export default function TvShow() {
   const { id } = useParams();
   const showId = Number(id);
   const userId = Number(localStorage.getItem("idUser") || "0");
+  const token = localStorage.getItem("token"); // if you protect endpoints
 
-  const details = tvShowDetailsById[showId];
-
-  const seasons = seasonsByShowId[showId] ?? [];
-  const defaultSeasonId = seasons[0]?.id;
-
-  const [seasonId, setSeasonId] = useState<number | undefined>(defaultSeasonId);
-
-  const [watchedSet, setWatchedSet] = useState<Set<number>>(
-    () => new Set(getWatchedEpisodeIds(userId))
-  );
-
-  const [fav, setFav] = useState(() => isFavorite(userId, showId));
-  const [added, setAdded] = useState(() => isAdded(userId, showId));
-
-  useEffect(() => {
-    setFav(isFavorite(userId, showId));
-    setAdded(isAdded(userId, showId));
-    setWatchedSet(new Set(getWatchedEpisodeIds(userId)));
-  }, [userId, showId]);
-
-  useEffect(() => {
-    if (!seasonId && defaultSeasonId) setSeasonId(defaultSeasonId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultSeasonId]);
-
-  const episodes = useMemo(() => {
-    if (!seasonId) return [];
-    return episodesBySeasonId[seasonId] ?? [];
-  }, [seasonId]);
+  const [details, setDetails] = useState<TvShowDetails | null>(null);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [seasonId, setSeasonId] = useState<number | undefined>(undefined);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [watchedSet, setWatchedSet] = useState<Set<number>>(new Set());
+  const [fav, setFav] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const listRef = useRef<HTMLOListElement | null>(null);
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 
   const scrollBy = (delta: number) => {
     const el = listRef.current;
@@ -61,20 +47,203 @@ export default function TvShow() {
     el.scrollTo({ top: el.scrollTop + delta, behavior: "smooth" });
   };
 
-  const onToggleFav = () => setFav(toggleFavorite(userId, showId));
-  const onToggleAdded = () => setAdded(toggleAdded(userId, showId));
+  useEffect(() => {
+    let alive = true;
 
-  const onToggleEpisode = (episodeId: number) => {
-    toggleEpisodeWatched(userId, episodeId);
-    setWatchedSet(new Set(getWatchedEpisodeIds(userId)));
+    const load = async () => {
+      if (!showId) return;
+
+      setLoading(true);
+      try {
+        const detailsRes = await fetch(`${API}/tvshows/${showId}`, { headers });
+        const detailsData = await detailsRes.json().catch(() => null);
+        if (!detailsRes.ok)
+          throw new Error(
+            detailsData?.message || "Failed to load show details"
+          );
+
+        const seasonsRes = await fetch(`${API}/seasons/by-tvshow/${showId}`, {
+          headers,
+        });
+        const seasonsData = await seasonsRes.json().catch(() => []);
+        if (!seasonsRes.ok)
+          throw new Error(seasonsData?.message || "Failed to load seasons");
+
+        const favRes = await fetch(
+          `${API}/users/${userId}/favorites/${showId}`,
+          { headers }
+        );
+        const favData = await favRes
+          .json()
+          .catch(() => ({ isFavorite: false }));
+
+        const addedRes = await fetch(`${API}/users/${userId}/added/${showId}`, {
+          headers,
+        });
+        const addedData = await addedRes
+          .json()
+          .catch(() => ({ isAdded: false }));
+
+        const watchedRes = await fetch(
+          `${API}/users/${userId}/watched-episodes`,
+          { headers }
+        );
+        const watchedData = await watchedRes.json().catch(() => []);
+
+        if (!alive) return;
+
+        setDetails(detailsData);
+        setSeasons(seasonsData);
+
+        const firstSeasonId = seasonsData?.[0]?.id;
+        setSeasonId((prev) => prev ?? firstSeasonId);
+
+        setFav(Boolean(favData?.isFavorite));
+        setAdded(Boolean(addedData?.isAdded));
+        setWatchedSet(new Set((watchedData as number[]) ?? []));
+      } catch (e) {
+        console.error(e);
+        if (alive) {
+          setDetails(null);
+          setSeasons([]);
+          setEpisodes([]);
+          setSeasonId(undefined);
+        }
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      alive = false;
+    };
+  }, [showId, userId]);
+
+  useEffect(() => {
+    let alive = true;
+
+    const loadEpisodes = async () => {
+      if (!seasonId) {
+        setEpisodes([]);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/episodes/by-season/${seasonId}`, {
+          headers,
+        });
+        const data = await res.json().catch(() => []);
+        if (!res.ok)
+          throw new Error(data?.message || "Failed to load episodes");
+
+        if (alive) setEpisodes(data);
+      } catch (e) {
+        console.error(e);
+        if (alive) setEpisodes([]);
+      }
+    };
+
+    loadEpisodes();
+
+    return () => {
+      alive = false;
+    };
+  }, [seasonId]);
+
+  // Toggle favorite (backend)
+  const onToggleFav = async () => {
+    try {
+      // ✅ typical: POST to add, DELETE to remove
+      const next = !fav;
+
+      const res = await fetch(`${API}/users/${userId}/favorites/${showId}`, {
+        method: next ? "POST" : "DELETE",
+        headers,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || "Failed to toggle favorite");
+      }
+
+      setFav(next);
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+  // Toggle added (backend)
+  const onToggleAdded = async () => {
+    try {
+      const next = !added;
+
+      const res = await fetch(`${API}/users/${userId}/added/${showId}`, {
+        method: next ? "POST" : "DELETE",
+        headers,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || "Failed to toggle added");
+      }
+
+      setAdded(next);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Toggle episode watched (backend)
+  const onToggleEpisode = async (episodeId: number) => {
+    try {
+      const watched = watchedSet.has(episodeId);
+
+      const res = await fetch(
+        `${API}/watch-progress/${userId}/watched-episodes/${episodeId}`,
+        {
+          method: watched ? "DELETE" : "POST",
+          headers,
+        }
+      );
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || "Failed to toggle watched");
+      }
+
+      // update UI state
+      setWatchedSet((prev) => {
+        const next = new Set(prev);
+        if (watched) next.delete(episodeId);
+        else next.add(episodeId);
+        return next;
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const safeSeasons = useMemo(() => seasons ?? [], [seasons]);
+
+  if (!details && !loading) {
+    return (
+      <div className={styles.page}>
+        <Sidebar />
+        <main className={styles.main}>
+          <p className={styles.notFound}>Show not found.</p>
+        </main>
+      </div>
+    );
+  }
 
   if (!details) {
     return (
       <div className={styles.page}>
         <Sidebar />
         <main className={styles.main}>
-          <p className={styles.notFound}>Show not found (mock).</p>
+          <p className={styles.notFound}>Loading...</p>
         </main>
       </div>
     );
@@ -87,12 +256,14 @@ export default function TvShow() {
       <main
         className={styles.main}
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(/img/${details.banner})`,
+          // If banner is a DATA URL from backend, use it directly:
+          // backgroundImage: `linear-gradient(...), url(${details.banner})`,
+          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(${details.banner})`,
         }}
       >
         <div className={styles.info}>
           <img
-            src={`${details.logo}`}
+            src={details.logo}
             alt={details.id.toString()}
             className={styles.title}
           />
@@ -106,7 +277,7 @@ export default function TvShow() {
             </ul>
 
             <img
-              src={`${details.streaming}.png`}
+              src={`/img/${details.streaming}.png`}
               alt={details.streaming}
               className={styles.streaming}
             />
@@ -144,7 +315,7 @@ export default function TvShow() {
                 value={seasonId}
                 onChange={(e) => setSeasonId(Number(e.target.value))}
               >
-                {seasons.map((s) => (
+                {safeSeasons.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>

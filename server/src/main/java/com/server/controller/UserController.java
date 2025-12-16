@@ -1,10 +1,15 @@
 package com.server.controller;
 
+import com.server.dto.TVShowResponse;
 import com.server.dto.UserResponse;
 import com.server.dto.UserUpdateRequest;
+import com.server.dto.WatchedEpisodeResponse;
+import com.server.mapper.TVShowMapper;
 import com.server.model.TVShowEntity;
 import com.server.model.UserEntity;
 import com.server.repository.UserRepository;
+import com.server.repository.WatchProgressRepository;
+import com.server.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -20,10 +26,14 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
+    private final WatchProgressRepository watchProgressRepository;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, UserService userService, WatchProgressRepository watchProgressRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
+        this.watchProgressRepository = watchProgressRepository;
     }
 
     // GET /users
@@ -104,4 +114,89 @@ public class UserController {
                 u.getWatchlist().stream().map(TVShowEntity::getId).collect(Collectors.toSet())
         );
     }
+    // FAVORITES
+    @GetMapping("/{userId}/favorites")
+    public List<TVShowResponse> getFavorites(@PathVariable Long userId) {
+        return userService.getFavorites(userId);
+    }
+
+    @PostMapping("/{userId}/favorites/{tvShowId}")
+    public ResponseEntity<Void> addFavorite(@PathVariable Long userId, @PathVariable Long tvShowId) {
+        userService.addFavorite(userId, tvShowId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{userId}/favorites/{tvShowId}")
+    public ResponseEntity<Void> removeFavorite(@PathVariable Long userId, @PathVariable Long tvShowId) {
+        userService.removeFavorite(userId, tvShowId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // WATCHLIST
+    @GetMapping("/{userId}/watchlist")
+    public List<TVShowResponse> getWatchlist(@PathVariable Long userId) {
+        return userService.getWatchlist(userId);
+    }
+
+    @PostMapping("/{userId}/watchlist/{tvShowId}")
+    public ResponseEntity<Void> addToWatchlist(@PathVariable Long userId, @PathVariable Long tvShowId) {
+        userService.addToWatchlist(userId, tvShowId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{userId}/watchlist/{tvShowId}")
+    public ResponseEntity<Void> removeFromWatchlist(@PathVariable Long userId, @PathVariable Long tvShowId) {
+        userService.removeFromWatchlist(userId, tvShowId);
+        return ResponseEntity.noContent().build();
+    }
+    // GET /users/{userId}/favorites/{showId}
+    @GetMapping("/{userId}/favorites/{showId}")
+    public ResponseEntity<Map<String, Boolean>> isFavorite(
+            @PathVariable Long userId,
+            @PathVariable Long showId
+    ) {
+        boolean isFavorite = userRepository.isFavorite(userId, showId);
+        return ResponseEntity.ok(Map.of("isFavorite", isFavorite));
+    }
+
+    // GET /users/{userId}/added/{showId}
+    @GetMapping("/{userId}/added/{showId}")
+    public ResponseEntity<Map<String, Boolean>> isAdded(
+            @PathVariable Long userId,
+            @PathVariable Long showId
+    ) {
+        boolean isAdded = userRepository.isInWatchlist(userId, showId);
+        return ResponseEntity.ok(Map.of("isAdded", isAdded));
+    }
+    @GetMapping("/{userId}/watched-episodes")
+    public ResponseEntity<List<WatchedEpisodeResponse>> getWatchedEpisodes(
+            @PathVariable Long userId
+    ) {
+        var result = watchProgressRepository.findAllByUserIdWithDetails(userId)
+                .stream()
+                .map(wp -> {
+                    WatchedEpisodeResponse dto = new WatchedEpisodeResponse();
+                    dto.tvShowId = wp.getTvShow().getId();
+                    dto.seasonId = wp.getSeason().getId();
+                    dto.episodeId = wp.getEpisode().getId();
+                    dto.episodeName = wp.getEpisode().getName();
+                    return dto;
+                })
+                .toList();
+
+        return ResponseEntity.ok(result);
+    }
+    @PostMapping("/{userId}/added/{showId}")
+    public ResponseEntity<Void> add(@PathVariable Long userId, @PathVariable Long showId) {
+        userService.add(userId, showId);
+        return ResponseEntity.noContent().build(); // 204 (frontend doesn't need body)
+    }
+
+    @DeleteMapping("/{userId}/added/{showId}")
+    public ResponseEntity<Void> remove(@PathVariable Long userId, @PathVariable Long showId) {
+        userService.remove(userId, showId);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }

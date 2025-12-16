@@ -95,4 +95,36 @@ public class WatchProgressService {
         r.episodeId = wp.getEpisode().getId();
         return r;
     }
+    @Transactional
+    public void markWatched(Long userId, Long episodeId) {
+        if (repo.existsByUser_IdAndEpisode_Id(userId, episodeId)) {
+            return; // already watched -> idempotent
+        }
+
+        UserEntity user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        EpisodeEntity ep = episodeRepo.findById(episodeId)
+                .orElseThrow(() -> new RuntimeException("Episode not found"));
+
+        // EpisodeEntity already has tvShow + season (lazy). We only need IDs, but we can set refs directly.
+        WatchProgressEntity wp = new WatchProgressEntity();
+        wp.setUser(user);
+        wp.setEpisode(ep);
+        wp.setSeason(ep.getSeason());
+        wp.setTvShow(ep.getTvShow());
+
+        repo.save(wp);
+    }
+
+    @Transactional
+    public void unmarkWatched(Long userId, Long episodeId) {
+        repo.findByUser_IdAndEpisode_Id(userId, episodeId)
+                .ifPresent(repo::delete);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isWatched(Long userId, Long episodeId) {
+        return repo.existsByUser_IdAndEpisode_Id(userId, episodeId);
+    }
 }

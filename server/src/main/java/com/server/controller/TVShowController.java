@@ -82,4 +82,11 @@ public class TVShowController {
     public List<TVShowEntity> getNotStartedShows(@PathVariable Long userId) {
         return service.getShowsUserHasNotStarted(userId);
     }
+    @GetMapping("/upcoming")
+    public List<TVShowResponse> getUpcomingTVShows() {
+        return service.getUpcomingSeasons().stream()
+                .map(TVShowMapper::toResponse)
+                .toList();
+    }
+
 }

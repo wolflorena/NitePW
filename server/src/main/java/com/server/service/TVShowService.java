@@ -5,6 +5,7 @@ import com.server.model.TVShowEntity;
 import com.server.repository.TVShowRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -40,5 +41,8 @@ public class TVShowService {
     }
     public List<TVShowEntity> getShowsUserHasNotStarted(Long userId) {
         return repository.findAllNotStartedByUser(userId);
+    }
+    public List<TVShowEntity> getUpcomingSeasons() {
+        return repository.findByNewSeasonAfter(LocalDate.now());
     }
 }

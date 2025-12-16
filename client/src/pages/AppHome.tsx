@@ -8,6 +8,7 @@ import { errorAlert } from "../services/alert";
 export default function AppHome() {
   const [shows, setShows] = useState<Show[]>([]);
   const [query, setQuery] = useState("");
+  const [exploreShows, setExploreShows] = useState<Show[]>([]);
 
   useEffect(() => {
     const fetchFavoritesShows = async () => {
@@ -37,6 +38,36 @@ export default function AppHome() {
     };
 
     fetchFavoritesShows();
+  }, []);
+
+  useEffect(() => {
+    const fetchExploreShows = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("id");
+        if (!userId) return;
+        const response = await fetch(
+          `http://localhost:8080/not-started/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          errorAlert(data?.message || "Failed to load Explore TV shows");
+          return;
+        }
+        setExploreShows(data);
+      } catch {
+        errorAlert("Network/server error while loading Explore TV shows");
+      }
+    };
+
+    fetchExploreShows();
   }, []);
 
   const filteredShows = useMemo(() => {

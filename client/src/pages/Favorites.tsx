@@ -1,27 +1,43 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import styles from "./Favorites.module.css";
-import { mockShows } from "../services/mockShows";
-import { favorites } from "../services/mockFavorites";
+
+const API = "http://localhost:8080";
 
 export default function Favorites() {
   const [query, setQuery] = useState("");
+  const [favoriteShows, setFavoriteShows] = useState<any[]>([]);
   const userId = Number(localStorage.getItem("idUser") || "0");
+  const token = localStorage.getItem("token");
 
-  const favoriteShows = useMemo(() => {
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API}/users/${userId}/favorites`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setFavoriteShows(data);
+        } else {
+          setFavoriteShows([]);
+        }
+      } catch {
+        setFavoriteShows([]);
+      }
+    })();
+  }, [userId, token]);
+
+  const filteredShows = useMemo(() => {
     const q = query.trim().toLowerCase();
-
-    const favIds = favorites
-      .filter((f) => f.userId === userId)
-      .map((f) => f.tvShowId);
-
-    const favSet = new Set(favIds);
-
-    return mockShows
-      .filter((s) => favSet.has(s.id))
-      .filter((s) => !q || s.name.toLowerCase().includes(q));
-  }, [query, userId]);
+    if (!q) return favoriteShows;
+    return favoriteShows.filter((s) => s.name.toLowerCase().includes(q));
+  }, [query, favoriteShows]);
 
   return (
     <div className={styles.page}>
@@ -37,7 +53,7 @@ export default function Favorites() {
         />
 
         <div className={styles.cards}>
-          {favoriteShows.map((show) => (
+          {filteredShows.map((show) => (
             <Link key={show.id} to={`/tvshow/${show.id}`}>
               <div className={styles.card}>
                 <img src={`${show.poster}`} alt={show.name} />

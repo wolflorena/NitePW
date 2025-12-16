@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
+import java.time.LocalDate;
+
 
 public interface TVShowRepository extends JpaRepository<TVShowEntity, Long> {
     @Query("""
@@ -17,4 +19,7 @@ public interface TVShowRepository extends JpaRepository<TVShowEntity, Long> {
         )
     """)
     List<TVShowEntity> findAllNotStartedByUser(@Param("userId") Long userId);
+
+    List<TVShowEntity> findByNewSeasonAfter(LocalDate date);
+
 }

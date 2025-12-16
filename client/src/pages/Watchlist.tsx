@@ -1,88 +1,117 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import styles from "./Watchlist.module.css";
-import { mockShows, type Show } from "../services/mockShows";
-import { addedShows, watchedEpisodes } from "../services/mockWatchlist";
+import {
+  type WatchlistCard,
+  getCurrentlyWatching,
+  getFinished,
+  getNotStarted,
+  getUpToDate,
+} from "../services/watchlistApi";
 
-type WatchItem = {
-  show: Show;
-  watchedCount: number;
-  total: number;
-  percent: number;
+type SectionState = {
+  loading: boolean;
+  error: string | null;
+  items: WatchlistCard[];
 };
 
 export default function Watchlist() {
   const [query, setQuery] = useState("");
   const userId = Number(localStorage.getItem("idUser") || "0");
 
-  const data = useMemo(() => {
-    const q = query.trim().toLowerCase();
+  const [currentlyWatching, setCurrentlyWatching] = useState<SectionState>({
+    loading: true,
+    error: null,
+    items: [],
+  });
+  const [notStarted, setNotStarted] = useState<SectionState>({
+    loading: true,
+    error: null,
+    items: [],
+  });
+  const [upToDate, setUpToDate] = useState<SectionState>({
+    loading: true,
+    error: null,
+    items: [],
+  });
+  const [finished, setFinished] = useState<SectionState>({
+    loading: true,
+    error: null,
+    items: [],
+  });
 
-    const showsById = new Map(mockShows.map((s) => [s.id, s]));
+  // fetch all 4 sections once on mount
+  useEffect(() => {
+    let cancelled = false;
 
-    const watchedForUser = watchedEpisodes.filter((w) => w.userId === userId);
-    const addedForUser = addedShows.filter((a) => a.userId === userId);
+    async function load() {
+      try {
+        const [cw, ns, utd, fin] = await Promise.all([
+          getCurrentlyWatching(userId, 5),
+          getNotStarted(userId, 5),
+          getUpToDate(userId, 5),
+          getFinished(userId, 5),
+        ]);
 
-    const watchedCountByShow = new Map<number, number>();
-    for (const w of watchedForUser) {
-      watchedCountByShow.set(
-        w.tvShowId,
-        (watchedCountByShow.get(w.tvShowId) ?? 0) + 1
-      );
+        if (cancelled) return;
+
+        setCurrentlyWatching({
+          loading: false,
+          error: null,
+          items: cw as WatchlistCard[],
+        });
+        setNotStarted({
+          loading: false,
+          error: null,
+          items: ns as WatchlistCard[],
+        });
+        setUpToDate({
+          loading: false,
+          error: null,
+          items: utd as WatchlistCard[],
+        });
+        setFinished({
+          loading: false,
+          error: null,
+          items: fin as WatchlistCard[],
+        });
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : "Failed to load watchlist";
+
+        setCurrentlyWatching((s) => ({ ...s, loading: false, error: msg }));
+        setNotStarted((s) => ({ ...s, loading: false, error: msg }));
+        setUpToDate((s) => ({ ...s, loading: false, error: msg }));
+        setFinished((s) => ({ ...s, loading: false, error: msg }));
+      }
     }
 
-    const watchedShowIds = Array.from(
-      new Set(watchedForUser.map((w) => w.tvShowId))
-    );
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    const watchItems: WatchItem[] = watchedShowIds
-      .map((id) => {
-        const show = showsById.get(id);
-        if (!show) return null;
+  // frontend search filter (since backend returns only 5)
+  const q = query.trim().toLowerCase();
+  const filterByQuery = (items: WatchlistCard[]) =>
+    !q ? items : items.filter((x) => x.name?.toLowerCase().includes(q));
 
-        const watchedCount = watchedCountByShow.get(id) ?? 0;
-        const total = show.totalEpisodes ?? 0;
-        const percent = total > 0 ? (watchedCount * 100) / total : 0;
-
-        return { show, watchedCount, total, percent };
-      })
-      .filter(Boolean) as WatchItem[];
-
-    const matchesSearch = (s: Show) => !q || s.name.toLowerCase().includes(q);
-
-    const currentlyWatching = watchItems
-      .filter((x) => matchesSearch(x.show) && x.percent < 100)
-      .slice(0, 5);
-
-    const upToDate = watchItems
-      .filter(
-        (x) =>
-          matchesSearch(x.show) &&
-          x.percent === 100 &&
-          x.show.status === "On going"
-      )
-      .slice(0, 5);
-
-    const finished = watchItems
-      .filter(
-        (x) =>
-          matchesSearch(x.show) &&
-          x.percent === 100 &&
-          (x.show.status === "Ended" || x.show.status === "Canceled")
-      )
-      .slice(0, 5);
-
-    const watchedIdSet = new Set(watchedShowIds);
-    const notStarted = addedForUser
-      .map((a) => showsById.get(a.tvShowId))
-      .filter((s): s is Show => !!s)
-      .filter((s) => !watchedIdSet.has(s.id))
-      .filter(matchesSearch)
-      .slice(0, 5);
-
-    return { currentlyWatching, upToDate, finished, notStarted };
-  }, [query, userId]);
+  const data = useMemo(() => {
+    return {
+      currentlyWatching: filterByQuery(currentlyWatching.items),
+      notStarted: filterByQuery(notStarted.items),
+      upToDate: filterByQuery(upToDate.items),
+      finished: filterByQuery(finished.items),
+    };
+  }, [
+    q,
+    currentlyWatching.items,
+    notStarted.items,
+    upToDate.items,
+    finished.items,
+  ]);
 
   return (
     <div className={styles.page}>
@@ -98,6 +127,7 @@ export default function Watchlist() {
         />
 
         <div className={styles.movies}>
+          {/* Currently Watching */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Currently watching</h1>
@@ -106,26 +136,23 @@ export default function Watchlist() {
               </h3>
             </div>
 
+            {currentlyWatching.error && <p>{currentlyWatching.error}</p>}
             <div className={styles.cards}>
-              {data.currentlyWatching.map((item) => (
-                <Link key={item.show.id} to={`/tvshow/${item.show.id}`}>
-                  <div className={styles.card}>
-                    <img src={`${item.show.poster}`} alt={item.show.name} />
-                    <div className={styles.pieContainer}>
-                      <div
-                        className={styles.pie}
-                        style={{ ["--p" as never]: item.percent }}
-                      >
-                        {Math.ceil(item.percent)}%
+              {currentlyWatching.loading
+                ? null
+                : data.currentlyWatching.map((item) => (
+                    <Link key={item.tvShowId} to={`/tvshow/${item.tvShowId}`}>
+                      <div className={styles.card}>
+                        <img src={item.poster} alt={item.name} />
+                        {/* backend does not return percent; remove pie or compute if you add fields */}
+                        <h3>{item.name}</h3>
                       </div>
-                    </div>
-                    <h3>{item.show.name}</h3>
-                  </div>
-                </Link>
-              ))}
+                    </Link>
+                  ))}
             </div>
           </section>
 
+          {/* Not Started */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Not started yet</h1>
@@ -134,18 +161,22 @@ export default function Watchlist() {
               </h3>
             </div>
 
+            {notStarted.error && <p>{notStarted.error}</p>}
             <div className={styles.cards}>
-              {data.notStarted.map((show) => (
-                <Link key={show.id} to={`/tvshow/${show.id}`}>
-                  <div className={styles.card}>
-                    <img src={`${show.poster}`} alt={show.name} />
-                    <h3>{show.name}</h3>
-                  </div>
-                </Link>
-              ))}
+              {notStarted.loading
+                ? null
+                : data.notStarted.map((show) => (
+                    <Link key={show.tvShowId} to={`/tvshow/${show.tvShowId}`}>
+                      <div className={styles.card}>
+                        <img src={show.poster} alt={show.name} />
+                        <h3>{show.name}</h3>
+                      </div>
+                    </Link>
+                  ))}
             </div>
           </section>
 
+          {/* Up To Date */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Up to date</h1>
@@ -154,18 +185,22 @@ export default function Watchlist() {
               </h3>
             </div>
 
+            {upToDate.error && <p>{upToDate.error}</p>}
             <div className={styles.cards}>
-              {data.upToDate.map((item) => (
-                <Link key={item.show.id} to={`/tvshow/${item.show.id}`}>
-                  <div className={styles.card}>
-                    <img src={`${item.show.poster}`} alt={item.show.name} />
-                    <h3>{item.show.name}</h3>
-                  </div>
-                </Link>
-              ))}
+              {upToDate.loading
+                ? null
+                : data.upToDate.map((item) => (
+                    <Link key={item.tvShowId} to={`/tvshow/${item.tvShowId}`}>
+                      <div className={styles.card}>
+                        <img src={item.poster} alt={item.name} />
+                        <h3>{item.name}</h3>
+                      </div>
+                    </Link>
+                  ))}
             </div>
           </section>
 
+          {/* Finished */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Finished</h1>
@@ -174,15 +209,18 @@ export default function Watchlist() {
               </h3>
             </div>
 
+            {finished.error && <p>{finished.error}</p>}
             <div className={styles.cards}>
-              {data.finished.map((item) => (
-                <Link key={item.show.id} to={`/tvshow/${item.show.id}`}>
-                  <div className={styles.card}>
-                    <img src={`${item.show.poster}`} alt={item.show.name} />
-                    <h3>{item.show.name}</h3>
-                  </div>
-                </Link>
-              ))}
+              {finished.loading
+                ? null
+                : data.finished.map((item) => (
+                    <Link key={item.tvShowId} to={`/tvshow/${item.tvShowId}`}>
+                      <div className={styles.card}>
+                        <img src={item.poster} alt={item.name} />
+                        <h3>{item.name}</h3>
+                      </div>
+                    </Link>
+                  ))}
             </div>
           </section>
         </div>

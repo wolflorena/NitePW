@@ -25,21 +25,21 @@ public class TVShowMapper {
     }
 
     public static TVShowResponse toResponse(TVShowEntity tv) {
-        TVShowResponse res = new TVShowResponse();
-        res.id = tv.getId();
-        res.name = tv.getName();
-        res.year = tv.getYear();
-        res.audience = tv.getAudience();
-        res.seasons = tv.getSeasons();
-        res.genre = tv.getGenre();
-        res.status = tv.getStatus();
-        res.description = tv.getDescription();
-        res.streaming = tv.getStreaming();
-        res.likes = tv.getLikes();
-        res.newSeason = tv.getNewSeason();
-        res.poster = tv.getPoster();
-        res.banner = tv.getBanner();
-        res.logo = tv.getLogo();
-        return res;
+        return new TVShowResponse(
+                tv.getId(),
+                tv.getName(),
+                tv.getYear(),
+                tv.getAudience(),
+                tv.getSeasons(),
+                tv.getGenre(),
+                tv.getStatus(),
+                tv.getDescription(),
+                tv.getStreaming(),
+                tv.getLikes(),
+                tv.getNewSeason(),
+                tv.getPoster(),
+                tv.getBanner(),
+                tv.getLogo()
+        );
     }
 }
