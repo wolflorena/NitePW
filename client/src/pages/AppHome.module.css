@@ -34,9 +34,14 @@ a {
 }
 
 .main {
-  width: 70vw;
   display: flex;
   flex-direction: column;
+  width: 80vw;
+  margin-left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .search {

@@ -55,6 +55,7 @@ public class WatchProgressController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+
     @PostMapping("/{userId}/watched-episodes/{episodeId}")
     public ResponseEntity<Void> markWatched(@PathVariable Long userId, @PathVariable Long episodeId) {
         service.markWatched(userId, episodeId);

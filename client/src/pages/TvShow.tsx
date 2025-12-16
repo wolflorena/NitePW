@@ -90,6 +90,7 @@ export default function TvShow() {
         );
         const watchedData = await watchedRes.json().catch(() => []);
 
+        console.log("Watched data:", watchedData);
         if (!alive) return;
 
         setDetails(detailsData);
@@ -100,7 +101,8 @@ export default function TvShow() {
 
         setFav(Boolean(favData?.isFavorite));
         setAdded(Boolean(addedData?.isAdded));
-        setWatchedSet(new Set((watchedData as number[]) ?? []));
+        const watchedIds = (watchedData as any[]).map((x) => x.episodeId);
+        setWatchedSet(new Set(watchedIds));
       } catch (e) {
         console.error(e);
         if (alive) {
@@ -220,6 +222,8 @@ export default function TvShow() {
         else next.add(episodeId);
         return next;
       });
+
+      console.log("Watched set:", watchedSet);
     } catch (e) {
       console.error(e);
     }

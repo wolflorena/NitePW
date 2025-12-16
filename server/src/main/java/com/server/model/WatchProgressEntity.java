@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(
-        name = "watch_progress",
-        uniqueConstraints = @UniqueConstraint(name = "uq_watch_user_show", columnNames = {"user_id", "tv_show_id"})
+        name = "watch_progress"
 )
 public class WatchProgressEntity {
 
@@ -13,19 +12,19 @@ public class WatchProgressEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "tv_show_id")
     private TVShowEntity tvShow;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "season_id")
     private SeasonEntity season;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "episode_id")
     private EpisodeEntity episode;
 

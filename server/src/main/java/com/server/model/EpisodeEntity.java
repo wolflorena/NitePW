@@ -10,12 +10,12 @@ public class EpisodeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "season_id")
     private SeasonEntity season;
 
     // Optional but handy: fast access to show
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "tv_show_id")
     private TVShowEntity tvShow;
 
