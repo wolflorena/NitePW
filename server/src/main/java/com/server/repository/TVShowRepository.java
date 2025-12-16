@@ -21,5 +21,5 @@ public interface TVShowRepository extends JpaRepository<TVShowEntity, Long> {
     List<TVShowEntity> findAllNotStartedByUser(@Param("userId") Long userId);
 
     List<TVShowEntity> findByNewSeasonAfter(LocalDate date);
-
+    List<TVShowEntity> findAllByIdIn(List<Long> ids);
 }

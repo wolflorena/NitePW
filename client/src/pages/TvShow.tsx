@@ -13,8 +13,8 @@ type TvShowDetails = {
   status: string;
   description: string;
   streaming: string;
-  banner: string; // if you store data URL, this will be a big string
-  logo: string; // same
+  banner: string;
+  logo: string;
 };
 
 const API = "http://localhost:8080";

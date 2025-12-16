@@ -19,6 +19,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
     @EntityGraph(attributePaths = {"favorites"})
     Optional<UserEntity> findWithFavoritesById(Long id);
+    @Query("select u from UserEntity u left join fetch u.watchlist where u.id = :id")
+    Optional<UserEntity> findByIdWithWatchlist(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"watchlist"})
     Optional<UserEntity> findWithWatchlistById(Long id);
@@ -37,12 +39,4 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
         WHERE u.id = :userId AND w.id = :tvShowId
     """)
     boolean isInWatchlist(Long userId, Long tvShowId);
-    @Query("""
-    select u
-    from UserEntity u
-    left join fetch u.watchlist
-    where u.id = :userId
-""")
-    Optional<UserEntity> findByIdWithWatchlist(@Param("userId") Long userId);
-
 }

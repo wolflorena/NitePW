@@ -15,11 +15,7 @@ public interface WatchProgressRepository extends JpaRepository<WatchProgressEnti
     List<WatchProgressEntity> findByUserId(Long userId);
 
     List<WatchProgressEntity> findByTvShowId(Long tvShowId);
-    @Query("""
-        SELECT wp
-        FROM WatchProgressEntity wp
-        WHERE wp.user.id = :userId
-    """)
+
     List<WatchProgressEntity> findAllByUserId(Long userId);
     boolean existsByUser_IdAndEpisode_Id(Long userId, Long episodeId);
 

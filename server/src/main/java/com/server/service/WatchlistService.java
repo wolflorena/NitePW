@@ -17,33 +17,105 @@ public class WatchlistService {
     private final WatchProgressRepository progressRepo;
     private final SeasonRepository seasonRepo;
     private final EpisodeRepository episodeRepo;
+    private final TVShowRepository tvShowRepository;
 
     public WatchlistService(
             UserRepository userRepo,
             WatchProgressRepository progressRepo,
             SeasonRepository seasonRepo,
-            EpisodeRepository episodeRepo
+            EpisodeRepository episodeRepo,
+            TVShowRepository tvShowRepository
     ) {
         this.userRepo = userRepo;
         this.progressRepo = progressRepo;
         this.seasonRepo = seasonRepo;
         this.episodeRepo = episodeRepo;
+        this.tvShowRepository = tvShowRepository;
     }
 
-    public Page<WatchlistCardDto> getNotStarted(Long userId, Pageable pageable) {
-        return filterWatchlist(userId, pageable, this::isNotStarted);
-    }
-
-    public Page<WatchlistCardDto> getCurrentlyWatching(Long userId, Pageable pageable) {
-        return filterWatchlist(userId, pageable, this::isCurrentlyWatching);
-    }
 
     public Page<WatchlistCardDto> getUpToDate(Long userId, Pageable pageable) {
-        return filterWatchlist(userId, pageable, this::isUpToDate);
+        UserEntity user = userRepo.findByIdWithWatchlist(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        List<TVShowEntity> watchlistShows = new ArrayList<>(user.getWatchlist());
+        if (watchlistShows.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        List<WatchProgressEntity> progress = progressRepo.findByUserId(userId);
+
+        Map<Long, Long> watchedCountByShow = new HashMap<>();
+        for (WatchProgressEntity wp : progress) {
+            Long showId = wp.getTvShow().getId();
+            watchedCountByShow.put(showId, watchedCountByShow.getOrDefault(showId, 0L) + 1L);
+        }
+
+        List<WatchlistCardDto> upToDate = watchlistShows.stream()
+                .filter(show -> !isShowFinished(show)) // ongoing
+                .filter(show -> {
+                    long watched = watchedCountByShow.getOrDefault(show.getId(), 0L);
+                    long total = episodeRepo.countByTvShow_Id(show.getId());
+                    return total > 0 && watched == total;
+                })
+                .map(show -> new WatchlistCardDto(
+                        show.getId(),
+                        show.getName(),
+                        show.getPoster(),
+                        show.getBanner(),
+                        show.getStatus(),
+                        100
+                ))
+                .sorted(Comparator.comparing(WatchlistCardDto::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), upToDate.size());
+        List<WatchlistCardDto> slice = start >= end ? List.of() : upToDate.subList(start, end);
+
+        return new PageImpl<>(slice, pageable, upToDate.size());
     }
 
     public Page<WatchlistCardDto> getFinished(Long userId, Pageable pageable) {
-        return filterWatchlist(userId, pageable, this::isFinished);
+        UserEntity user = userRepo.findByIdWithWatchlist(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        List<TVShowEntity> watchlistShows = new ArrayList<>(user.getWatchlist());
+        if (watchlistShows.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        List<WatchProgressEntity> progress = progressRepo.findByUserId(userId);
+
+        Map<Long, Long> watchedCountByShow = new HashMap<>();
+        for (WatchProgressEntity wp : progress) {
+            Long showId = wp.getTvShow().getId();
+            watchedCountByShow.put(showId, watchedCountByShow.getOrDefault(showId, 0L) + 1L);
+        }
+
+        List<WatchlistCardDto> finished = watchlistShows.stream()
+                .filter(this::isShowFinished) 
+                .filter(show -> {
+                    long watched = watchedCountByShow.getOrDefault(show.getId(), 0L);
+                    long total = episodeRepo.countByTvShow_Id(show.getId());
+                    return total > 0 && watched == total;
+                })
+                .map(show -> new WatchlistCardDto(
+                        show.getId(),
+                        show.getName(),
+                        show.getPoster(),
+                        show.getBanner(),
+                        show.getStatus(),
+                        100
+                ))
+                .sorted(Comparator.comparing(WatchlistCardDto::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), finished.size());
+        List<WatchlistCardDto> slice = start >= end ? List.of() : finished.subList(start, end);
+
+        return new PageImpl<>(slice, pageable, finished.size());
     }
 
     private Page<WatchlistCardDto> filterWatchlist(Long userId, Pageable pageable, Predicate<Row> predicate) {
@@ -136,5 +208,95 @@ public class WatchlistService {
             this.show = show;
             this.progress = progress;
         }
+    }
+
+    public Page<WatchlistCardDto> getCurrentlyWatching(Long userId, Pageable pageable) {
+
+        List<WatchProgressEntity> progress = progressRepo.findByUserId(userId);
+
+        Map<Long, Long> watchedCountByShow = new HashMap<>();
+        for (WatchProgressEntity wp : progress) {
+            Long showId = wp.getTvShow().getId();
+            watchedCountByShow.put(showId, watchedCountByShow.getOrDefault(showId, 0L) + 1L);
+        }
+
+        List<Long> currentShowIds = new ArrayList<>();
+        Map<Long, Integer> percentByShow = new HashMap<>();
+
+        for (Map.Entry<Long, Long> entry : watchedCountByShow.entrySet()) {
+            Long showId = entry.getKey();
+            long watched = entry.getValue();
+
+            long total = episodeRepo.countByTvShow_Id(showId);
+            if (total <= 0) continue;
+
+            if (watched >= 1 && watched < total) {
+                currentShowIds.add(showId);
+
+                int percent = (int) Math.ceil((watched * 100.0) / total);
+                percentByShow.put(showId, percent);
+            }
+        }
+
+        currentShowIds.sort((a, b) -> percentByShow.get(b) - percentByShow.get(a));
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), currentShowIds.size());
+        List<Long> pageIds = (start >= end) ? List.of() : currentShowIds.subList(start, end);
+
+        List<TVShowEntity> shows = pageIds.isEmpty() ? List.of() : tvShowRepository.findAllByIdIn(pageIds);
+
+        Map<Long, TVShowEntity> byId = shows.stream().collect(Collectors.toMap(TVShowEntity::getId, s -> s));
+        List<WatchlistCardDto> content = pageIds.stream()
+                .map(id -> {
+                    TVShowEntity s = byId.get(id);
+                    if (s == null) return null;
+                    WatchlistCardDto dto = new WatchlistCardDto();
+                    dto.setTvShowId(s.getId());
+                    dto.setName(s.getName());
+                    dto.setPoster(s.getPoster());
+                    dto.setProgressPercent(percentByShow.getOrDefault(s.getId(), 0));
+                    return dto;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        return new PageImpl<>(content, pageable, currentShowIds.size());
+    }
+
+    public Page<WatchlistCardDto> getNotStarted(Long userId, Pageable pageable) {
+        UserEntity user = userRepo.findByIdWithWatchlist(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<TVShowEntity> watchlistShows = new ArrayList<>(user.getWatchlist());
+
+        if (watchlistShows.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        List<WatchProgressEntity> progress = progressRepo.findByUserId(userId);
+
+        Set<Long> startedShowIds = progress.stream()
+                .map(p -> p.getTvShow().getId())
+                .collect(Collectors.toSet());
+
+        List<WatchlistCardDto> notStarted = watchlistShows.stream()
+                .filter(show -> !startedShowIds.contains(show.getId()))
+
+                .map(show -> new WatchlistCardDto(
+                        show.getId(),
+                        show.getName(),
+                        show.getPoster(),
+                        show.getBanner(),
+                        show.getStatus(),
+                        0
+                ))
+                .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), notStarted.size());
+        List<WatchlistCardDto> slice = start >= end ? List.of() : notStarted.subList(start, end);
+
+        return new PageImpl<>(slice, pageable, notStarted.size());
     }
 }

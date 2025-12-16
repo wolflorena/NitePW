@@ -12,4 +12,5 @@ public interface EpisodeRepository extends JpaRepository<EpisodeEntity, Long> {
     boolean existsByIdAndTvShowId(Long id, Long tvShowId);
     @Query("select max(e.id) from EpisodeEntity e where e.season.id = :seasonId")
     Long findLastEpisodeId(@Param("seasonId") Long seasonId);
+    long countByTvShow_Id(Long tvShowId);
 }

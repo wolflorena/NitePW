@@ -47,6 +47,7 @@ export async function getCurrentlyWatching(userId: number, limit = 5) {
   const page = await apiGet<PageResponse<WatchlistCard>>(
     `/watchlist/${userId}/currently-watching?page=0&size=${limit}`
   );
+  console.log("Currently Watching Page:", page);
   return extractItems(page);
 }
 export async function getNotStarted(userId: number, limit = 5) {

@@ -93,26 +93,25 @@ export default function Watchlist() {
     };
   }, []);
 
-  // frontend search filter (since backend returns only 5)
-  const q = query.trim().toLowerCase();
-  const filterByQuery = (items: WatchlistCard[]) =>
-    !q ? items : items.filter((x) => x.name?.toLowerCase().includes(q));
-
   const data = useMemo(() => {
+    const q = query.trim().toLowerCase();
+
+    const filter = (items: WatchlistCard[]) =>
+      !q ? items : items.filter((x) => x.name?.toLowerCase().includes(q));
+
     return {
-      currentlyWatching: filterByQuery(currentlyWatching.items),
-      notStarted: filterByQuery(notStarted.items),
-      upToDate: filterByQuery(upToDate.items),
-      finished: filterByQuery(finished.items),
+      currentlyWatching: filter(currentlyWatching.items),
+      notStarted: filter(notStarted.items),
+      upToDate: filter(upToDate.items),
+      finished: filter(finished.items),
     };
   }, [
-    q,
+    query,
     currentlyWatching.items,
     notStarted.items,
     upToDate.items,
     finished.items,
   ]);
-
   return (
     <div className={styles.page}>
       <Sidebar />
@@ -144,7 +143,6 @@ export default function Watchlist() {
                     <Link key={item.tvShowId} to={`/tvshow/${item.tvShowId}`}>
                       <div className={styles.card}>
                         <img src={item.poster} alt={item.name} />
-                        {/* backend does not return percent; remove pie or compute if you add fields */}
                         <h3>{item.name}</h3>
                       </div>
                     </Link>
@@ -176,7 +174,6 @@ export default function Watchlist() {
             </div>
           </section>
 
-          {/* Up To Date */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Up to date</h1>
@@ -200,7 +197,6 @@ export default function Watchlist() {
             </div>
           </section>
 
-          {/* Finished */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Finished</h1>
