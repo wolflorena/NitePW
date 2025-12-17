@@ -126,7 +126,6 @@ export default function Watchlist() {
         />
 
         <div className={styles.movies}>
-          {/* Currently Watching */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Currently watching</h1>
@@ -143,6 +142,16 @@ export default function Watchlist() {
                     <Link key={item.tvShowId} to={`/tvshow/${item.tvShowId}`}>
                       <div className={styles.card}>
                         <img src={item.poster} alt={item.name} />
+                        <div className={styles.pieContainer}>
+                          <div
+                            className={styles.pie}
+                            style={{
+                              ["--p" as any]: item.progressPercent ?? 0,
+                            }}
+                          >
+                            {Math.ceil(item.progressPercent ?? 0)}%
+                          </div>
+                        </div>
                         <h3>{item.name}</h3>
                       </div>
                     </Link>
@@ -150,7 +159,6 @@ export default function Watchlist() {
             </div>
           </section>
 
-          {/* Not Started */}
           <section className={styles.section}>
             <div className={styles.text}>
               <h1>Not started yet</h1>
