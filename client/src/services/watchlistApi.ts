@@ -10,6 +10,7 @@ export type WatchlistCard = {
     episodeId?: number;
     episodeName?: string;
   } | null;
+  progressPercent?: number;
 };
 
 type PageResponse<T> = {

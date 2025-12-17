@@ -94,7 +94,7 @@ public class WatchlistService {
         }
 
         List<WatchlistCardDto> finished = watchlistShows.stream()
-                .filter(this::isShowFinished) 
+                .filter(this::isShowFinished)
                 .filter(show -> {
                     long watched = watchedCountByShow.getOrDefault(show.getId(), 0L);
                     long total = episodeRepo.countByTvShow_Id(show.getId());
