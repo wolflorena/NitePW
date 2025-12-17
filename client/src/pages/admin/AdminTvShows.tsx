@@ -72,8 +72,29 @@ export default function AdminTvShows() {
 
     if (!res.isConfirmed) return;
 
-    await deleteTvShowById(showId);
-    setShows((prev) => prev.filter((s) => s.id !== showId));
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:8080/tvshows/${showId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.message || "Delete failed");
+      }
+
+      setShows((prev) => prev.filter((s) => s.id !== showId));
+    } catch (err) {
+      await Swal.fire({
+        title: "Error",
+        text: err instanceof Error ? err.message : "Delete failed",
+        icon: "error",
+      });
+    }
   };
 
   const onEdit = (s: AdminTvShow) => {

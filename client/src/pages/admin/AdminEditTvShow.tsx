@@ -246,6 +246,7 @@ export default function AdminEditTvShow() {
                 <input
                   id="newseason"
                   value={form.newSeason}
+                  type="date"
                   onChange={(e) => set("newSeason", e.target.value)}
                 />
               </div>

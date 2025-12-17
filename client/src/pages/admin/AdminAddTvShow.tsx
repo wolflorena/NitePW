@@ -240,6 +240,7 @@ export default function AdminAddTvShow() {
                 <label htmlFor="newseason">New Season</label>
                 <input
                   id="newseason"
+                  type="date"
                   value={newSeason}
                   onChange={(e) => setNewSeason(e.target.value)}
                 />
