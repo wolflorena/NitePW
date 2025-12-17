@@ -84,7 +84,7 @@ export default function AdminAddTvShow() {
         genre: genre.trim(),
         status: status as AdminTvShowStatus,
         description: description.trim(),
-        streaming,
+        streaming: streaming.toLowerCase(),
         likes: Number(likes),
         newSeason: newSeason.trim(),
         poster,
