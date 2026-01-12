@@ -10,6 +10,8 @@ import com.server.service.TVShowService;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.server.service.StorageService;
+
 
 import java.util.List;
 
@@ -19,20 +21,30 @@ public class TVShowController {
 
     private final TVShowRepository repository;
     private final TVShowService service;
+    private final StorageService storageService;
 
-    public TVShowController(TVShowRepository repository, TVShowService service) {
+    public TVShowController(TVShowRepository repository, TVShowService service, StorageService storageService) {
         this.repository = repository;
         this.service = service;
-
+        this.storageService = storageService;
     }
 
     // CREATE
     @PostMapping
-    public TVShowResponse create(@RequestBody CreateTVShowRequest request) {
-        TVShowEntity saved = repository.save(
-                TVShowMapper.toEntity(request)
-        );
-        return TVShowMapper.toResponse(saved);
+    public ResponseEntity<TVShowResponse> create(@RequestBody CreateTVShowRequest req) {
+        TVShowEntity tv = TVShowMapper.toEntity(req);
+
+        // Upload base64 -> URL and overwrite
+        String posterUrl = storageService.uploadDataUrlImage(req.poster, "posters");
+        String bannerUrl = storageService.uploadDataUrlImage(req.banner, "banners");
+        String logoUrl   = storageService.uploadDataUrlImage(req.logo, "logos");
+
+        tv.setPoster(posterUrl);
+        tv.setBanner(bannerUrl);
+        tv.setLogo(logoUrl);
+
+        repository.save(tv);
+        return ResponseEntity.ok(TVShowMapper.toResponse(tv));
     }
 
     // READ ALL
@@ -61,14 +73,37 @@ public class TVShowController {
                 .map(TVShowMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("TV show not found"));
     }
-    //update
     @PutMapping("/{id}")
-    public TVShowEntity update(
-            @PathVariable Long id,
-            @RequestBody TVShowUpdateRequest request
-    ) {
-        return service.update(id, request);
+    public ResponseEntity<TVShowResponse> update(@PathVariable Long id, @RequestBody TVShowUpdateRequest req) {
+        TVShowEntity tv = repository.findById(id).orElseThrow(() -> new RuntimeException("TV show not found"));
+
+        // update normal fields
+        tv.setName(req.name);
+        tv.setYear(req.year);
+        tv.setAudience(req.audience);
+        tv.setSeasons(req.seasons);
+        tv.setGenre(req.genre);
+        tv.setStatus(req.status);
+        tv.setDescription(req.description);
+        tv.setStreaming(req.streaming);
+        tv.setLikes(req.likes);
+        tv.setNewSeason(req.newSeason);
+
+        // upload only if a new image is provided
+        if (req.poster != null && !req.poster.isBlank()) {
+            tv.setPoster(storageService.uploadDataUrlImage(req.poster, "posters"));
+        }
+        if (req.banner != null && !req.banner.isBlank()) {
+            tv.setBanner(storageService.uploadDataUrlImage(req.banner, "banners"));
+        }
+        if (req.logo != null && !req.logo.isBlank()) {
+            tv.setLogo(storageService.uploadDataUrlImage(req.logo, "logos"));
+        }
+
+        repository.save(tv);
+        return ResponseEntity.ok(TVShowMapper.toResponse(tv));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (!repository.existsById(id)) {
